@@ -1,51 +1,82 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
-  <rect width="1200" height="700" fill="#0e1a24"/>
-  <text x="60" y="90" fill="#f4f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700">GS-DroneGym Keyboard Flight Map</text>
-  <text x="60" y="135" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="24">Safe, terminal-friendly controls for the interactive viewer</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <rect width="1400" height="760" fill="#0e1a24"/>
 
-  <rect x="70" y="180" width="470" height="430" rx="28" fill="#152432" stroke="#2c445c" stroke-width="2"/>
-  <text x="105" y="230" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Movement Cluster</text>
+  <text x="70" y="95" fill="#f4f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="52" font-weight="700">
+    GS-DroneGym Keyboard Flight Map
+  </text>
+  <text x="70" y="145" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="28">
+    Safe, terminal-friendly controls for the interactive viewer
+  </text>
 
-  <g font-family="Consolas, monospace" font-size="34" font-weight="700" text-anchor="middle">
-    <rect x="220" y="270" width="90" height="90" rx="16" fill="#26425b"/>
-    <text x="265" y="327" fill="#ffffff">I</text>
-    <rect x="120" y="375" width="90" height="90" rx="16" fill="#26425b"/>
-    <text x="165" y="432" fill="#ffffff">J</text>
-    <rect x="220" y="375" width="90" height="90" rx="16" fill="#26425b"/>
-    <text x="265" y="432" fill="#ffffff">K</text>
-    <rect x="320" y="375" width="90" height="90" rx="16" fill="#26425b"/>
-    <text x="365" y="432" fill="#ffffff">L</text>
-    <rect x="120" y="490" width="90" height="90" rx="16" fill="#315d3a"/>
-    <text x="165" y="547" fill="#ffffff">U</text>
-    <rect x="320" y="490" width="90" height="90" rx="16" fill="#6a4d2f"/>
-    <text x="365" y="547" fill="#ffffff">O</text>
-    <rect x="220" y="490" width="90" height="90" rx="16" fill="#5f2f52"/>
-    <text x="265" y="547" fill="#ffffff">N</text>
-    <rect x="420" y="490" width="90" height="90" rx="16" fill="#5f2f52"/>
-    <text x="465" y="547" fill="#ffffff">M</text>
+  <rect x="70" y="200" width="520" height="460" rx="28" fill="#152432" stroke="#2c445c" stroke-width="2"/>
+  <text x="110" y="255" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">
+    Movement Cluster
+  </text>
+
+  <g font-family="Consolas, monospace" font-size="38" font-weight="700" text-anchor="middle">
+    <rect x="240" y="300" width="100" height="100" rx="18" fill="#26425b"/>
+    <text x="290" y="364" fill="#ffffff">I</text>
+
+    <rect x="130" y="420" width="100" height="100" rx="18" fill="#26425b"/>
+    <text x="180" y="484" fill="#ffffff">J</text>
+
+    <rect x="240" y="420" width="100" height="100" rx="18" fill="#26425b"/>
+    <text x="290" y="484" fill="#ffffff">K</text>
+
+    <rect x="350" y="420" width="100" height="100" rx="18" fill="#26425b"/>
+    <text x="400" y="484" fill="#ffffff">L</text>
+
+    <rect x="130" y="550" width="100" height="100" rx="18" fill="#315d3a"/>
+    <text x="180" y="614" fill="#ffffff">U</text>
+
+    <rect x="240" y="550" width="100" height="100" rx="18" fill="#5f2f52"/>
+    <text x="290" y="614" fill="#ffffff">N</text>
+
+    <rect x="350" y="550" width="100" height="100" rx="18" fill="#6a4d2f"/>
+    <text x="400" y="614" fill="#ffffff">O</text>
+
+    <rect x="460" y="550" width="100" height="100" rx="18" fill="#5f2f52"/>
+    <text x="510" y="614" fill="#ffffff">M</text>
   </g>
 
-  <text x="585" y="230" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Meaning</text>
-  <g font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f4f7fb">
-    <text x="585" y="300">I / K : forward / back</text>
-    <text x="585" y="350">J / L : left / right</text>
-    <text x="585" y="400">U / O : ascend / descend</text>
-    <text x="585" y="450">N / M : yaw left / yaw right</text>
-    <text x="585" y="500">P : pause the rollout</text>
-    <text x="585" y="550">R : reset the episode</text>
-    <text x="585" y="600">Esc : quit the viewer</text>
+  <text x="650" y="255" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">
+    Meaning
+  </text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="30" fill="#f4f7fb">
+    <text x="650" y="330">I / K : forward / back</text>
+    <text x="650" y="390">J / L : left / right</text>
+    <text x="650" y="450">U / O : ascend / descend</text>
+    <text x="650" y="510">N / M : yaw left / yaw right</text>
+    <text x="650" y="570">P : pause the rollout</text>
+    <text x="650" y="630">R : reset the episode</text>
+    <text x="650" y="690">Esc : quit the viewer</text>
   </g>
 
-  <rect x="700" y="180" width="430" height="170" rx="22" fill="#152432" stroke="#2c445c" stroke-width="2"/>
-  <text x="735" y="235" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Viewer Tip</text>
-  <text x="735" y="282" fill="#f4f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="24">Use <tspan font-weight="700">waypoint mode</tspan> for intuitive flying.</text>
-  <text x="735" y="320" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="22">Each keypress nudges the desired next waypoint rather</text>
-  <text x="735" y="350" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="22">than forcing raw motor commands.</text>
+  <rect x="1020" y="210" width="320" height="180" rx="24" fill="#152432" stroke="#2c445c" stroke-width="2"/>
+  <text x="1060" y="265" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    Viewer Tip
+  </text>
+  <text x="1060" y="318" fill="#f4f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="26">
+    Use <tspan font-weight="700">waypoint mode</tspan>
+  </text>
+  <text x="1060" y="352" fill="#f4f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="26">
+    for intuitive flying.
+  </text>
+  <text x="1060" y="405" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="22">
+    Each keypress nudges the next waypoint
+  </text>
+  <text x="1060" y="435" fill="#b7c7d8" font-family="Segoe UI, Arial, sans-serif" font-size="22">
+    instead of forcing raw motor commands.
+  </text>
 
-  <rect x="700" y="390" width="430" height="220" rx="22" fill="#152432" stroke="#2c445c" stroke-width="2"/>
-  <text x="735" y="445" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Run It</text>
-  <text x="735" y="490" fill="#f4f7fb" font-family="Consolas, monospace" font-size="22">gs-dronegym-live-view</text>
-  <text x="735" y="525" fill="#f4f7fb" font-family="Consolas, monospace" font-size="22">  --env-id PointNav-v0</text>
-  <text x="735" y="560" fill="#f4f7fb" font-family="Consolas, monospace" font-size="22">  --scene None</text>
-  <text x="735" y="595" fill="#f4f7fb" font-family="Consolas, monospace" font-size="22">  --policy keyboard</text>
+  <rect x="1020" y="440" width="320" height="220" rx="24" fill="#152432" stroke="#2c445c" stroke-width="2"/>
+  <text x="1060" y="495" fill="#9bd3ff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    Run It
+  </text>
+  <g fill="#f4f7fb" font-family="Consolas, monospace" font-size="22">
+    <text x="1060" y="550">gs-dronegym-live-view</text>
+    <text x="1060" y="585">  --env-id PointNav-v0</text>
+    <text x="1060" y="620">  --scene None</text>
+    <text x="1060" y="655">  --policy keyboard</text>
+  </g>
 </svg>

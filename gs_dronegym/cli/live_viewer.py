@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=0, help="Environment seed.")
     parser.add_argument(
         "--policy",
-        choices=["random", "zero", "keyboard"],
+        choices=["random", "zero", "keyboard", "scripted"],
         default="random",
         help="Built-in policy used to drive the environment.",
     )
@@ -168,6 +168,7 @@ def _select_action(
     policy: str,
     action_mode: str,
     keyboard_state: KeyboardState,
+    step_index: int,
 ) -> np.ndarray:
     """Select an action from a built-in policy.
 
@@ -176,6 +177,7 @@ def _select_action(
         policy: Policy name.
         action_mode: Environment action mode.
         keyboard_state: Current keyboard state.
+        step_index: Current rollout step index.
 
     Returns:
         Action vector.
@@ -185,7 +187,41 @@ def _select_action(
         return np.zeros(shape, dtype=np.float32)
     if policy == "keyboard":
         return _make_keyboard_action(keyboard_state, action_mode=action_mode)
+    if policy == "scripted":
+        return _make_scripted_demo_action(step_index=step_index, action_mode=action_mode)
     return np.asarray(env.action_space.sample(), dtype=np.float32)
+
+
+def _make_scripted_demo_action(
+    step_index: int,
+    action_mode: str,
+) -> np.ndarray:
+    """Generate a deterministic action sequence for GIF demos.
+
+    Args:
+        step_index: Current rollout step index.
+        action_mode: Environment action mode.
+
+    Returns:
+        Normalized 4D action vector.
+    """
+    phase = (step_index // 10) % 6
+    action = np.zeros(4, dtype=np.float32)
+    if phase == 0:
+        action[0] = 0.9
+    elif phase == 1:
+        action[1] = 0.9
+    elif phase == 2:
+        action[2] = 0.8
+    elif phase == 3:
+        action[3] = 0.7
+    elif phase == 4:
+        action[1] = -0.9
+    else:
+        action[2] = -0.8
+    if action_mode == "direct":
+        action[0] = np.clip(action[0], -0.5, 0.7)
+    return action
 
 
 def _overlay_text(
@@ -435,6 +471,7 @@ def run_live_viewer(
                 policy=policy,
                 action_mode=action_mode,
                 keyboard_state=keyboard_state,
+                step_index=step_index,
             )
             observation, reward, terminated, truncated, info = env.step(action)
             positions.append(np.asarray(info["drone_state"], dtype=np.float32)[:3])

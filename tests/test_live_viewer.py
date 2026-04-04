@@ -8,6 +8,7 @@ from gs_dronegym.cli.live_viewer import (
     KeyboardState,
     _depth_to_rgb,
     _make_keyboard_action,
+    _make_scripted_demo_action,
     _normalize_scene,
     run_live_viewer,
 )
@@ -34,6 +35,18 @@ def test_depth_to_rgb_returns_uint8_image() -> None:
     rgb = _depth_to_rgb(depth)
     assert rgb.shape == (4, 4, 3)
     assert rgb.dtype == np.uint8
+
+
+def test_scripted_demo_action_is_deterministic() -> None:
+    """The scripted demo policy should emit deterministic phase actions."""
+    assert np.allclose(
+        _make_scripted_demo_action(step_index=0, action_mode="waypoint"),
+        np.asarray([0.9, 0.0, 0.0, 0.0], dtype=np.float32),
+    )
+    assert np.allclose(
+        _make_scripted_demo_action(step_index=20, action_mode="waypoint"),
+        np.asarray([0.0, 0.0, 0.8, 0.0], dtype=np.float32),
+    )
 
 
 def test_live_viewer_can_save_gif_without_show(tmp_path: object) -> None:

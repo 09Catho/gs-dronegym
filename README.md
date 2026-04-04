@@ -24,9 +24,21 @@ GS-DroneGym starts from one very specific problem: **VLA-AN** identifies the vis
 
 ![GS-DroneGym viewer](assets/live_view_overlay.gif)
 
+**Keyboard flight layout for the live viewer**
+
+![Keyboard controls](assets/keyboard_controls.svg)
+
+**Scripted demo of the same movement primitives used in manual mode**
+
+![Keyboard demo](assets/keyboard_demo.gif)
+
 **First frame rendered from a real Gaussian scene**
 
 ![First real frame](assets/first_real_frame.png)
+
+**Planned synthetic dataset creation pipeline**
+
+![Synthetic dataset roadmap](assets/synthetic_dataset_plan.svg)
 
 ## What You Get
 
@@ -166,6 +178,12 @@ Manual flight mode:
 gs-dronegym-live-view --env-id PointNav-v0 --scene None --policy keyboard --action-mode waypoint
 ```
 
+Generate a keyboard-style demo GIF:
+
+```bash
+gs-dronegym-live-view --env-id PointNav-v0 --scene None --policy scripted --steps 60 --no-show --save-gif outputs/keyboard_demo.gif
+```
+
 Real Gaussian scene:
 
 ```bash
@@ -192,6 +210,40 @@ The [`examples/`](examples) folder includes:
 - `load_lerobot_dataset.py`
 - `train_bc.py`
 - `evaluate_benchmark.py`
+
+## Next Phase
+
+The next major step is to turn GS-DroneGym from a simulator plus benchmark layer into a **dataset factory for aerial VLA training**.
+
+Planned work:
+
+1. **Synthetic VLA-AN-style dataset creation**
+   - task-conditioned rollouts with language, RGB, depth, state history, and expert next-waypoint supervision
+   - staged exports for scene grounding, short-horizon flight skills, and long-horizon navigation
+   - dataset writers for Parquet / Hugging Face-friendly formats
+
+2. **Expert planner and safety supervision**
+   - collision-aware path generation
+   - dense waypoint extraction
+   - corrective targets and safety labels for recovery behavior
+
+3. **Task synthesis at scale**
+   - templated and paraphrased language instructions
+   - object/region-driven task generation
+   - synthetic curriculum generation over scenes, goals, and obstacles
+
+4. **Benchmark-grade reporting**
+   - reproducible splits
+   - baseline comparison tables
+   - dataset cards and benchmark summaries
+
+## References
+
+- [VLA-AN: An Efficient and Onboard Vision-Language-Action Framework for Aerial Navigation in Complex Environments](https://arxiv.org/abs/2512.15258)
+- [RaceVLA: VLA-based Racing Drone Navigation with Human-like Behaviour](https://arxiv.org/abs/2503.02572)
+- [LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning](https://arxiv.org/abs/2306.03310)
+- [LeRobot GitHub](https://github.com/huggingface/lerobot)
+- [Hugging Face LeRobot Docs](https://huggingface.co/docs/lerobot)
 
 ## Development
 

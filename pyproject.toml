@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gs-dronegym"
+version = "0.2.0"
+description = "Drone-first photorealistic simulation plus cross-benchmark trajectory tooling for VLA research."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Atul Saxena" }
+]
+keywords = ["robotics", "drones", "gymnasium", "gaussian-splatting", "vision-language-action"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "gymnasium>=0.29",
+  "numpy>=1.24",
+  "torch>=2.0",
+  "gsplat>=1.0",
+  "plyfile>=0.9",
+  "matplotlib>=3.7",
+  "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+cuda = ["gsplat[cuda]"]
+libero = [
+  "h5py>=3.10",
+  "libero @ git+https://github.com/huggingface/lerobot-libero.git",
+]
+lerobot = [
+  "datasets>=2.19",
+  "huggingface_hub>=0.23",
+  "lerobot>=0.3",
+  "pyarrow>=16.0",
+]
+benchmarks = [
+  "datasets>=2.19",
+  "h5py>=3.10",
+  "huggingface_hub>=0.23",
+  "lerobot>=0.3",
+  "libero @ git+https://github.com/huggingface/lerobot-libero.git",
+  "pyarrow>=16.0",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+  "black>=24.0",
+  "mypy>=1.8",
+]
+
+[project.scripts]
+gs-dronegym-build-scene = "gs_dronegym.utils.scene_builder:main"
+gs-dronegym-inspect-dataset = "gs_dronegym.cli.inspect_dataset:main"
+gs-dronegym-train-bc = "gs_dronegym.cli.train_bc:main"
+gs-dronegym-evaluate = "gs_dronegym.cli.evaluate:main"
+gs-dronegym-live-view = "gs_dronegym.cli.live_viewer:main"
+
+[project.urls]
+Homepage = "https://github.com/09Catho/gs-dronegym"
+Repository = "https://github.com/09Catho/gs-dronegym"
+Issues = "https://github.com/09Catho/gs-dronegym/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gs_dronegym*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "D"]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+strict_optional = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+exclude = ["tests/"]

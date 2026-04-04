@@ -1,0 +1,7 @@
+gymnasium>=0.29
+numpy>=1.24
+torch>=2.0
+gsplat>=1.0
+plyfile>=0.9
+matplotlib>=3.7
+Pillow>=10.0

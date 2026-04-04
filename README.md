@@ -24,13 +24,30 @@ GS-DroneGym starts from one very specific problem: **VLA-AN** identifies the vis
 
 ![Keyboard demo](assets/keyboard_demo.gif)
 
-What this GIF means:
+This GIF shows the same movement primitives used in manual keyboard mode.  
+The RGB panel is the drone camera view, the depth panel is estimated distance, and the top-down panel is the moving trajectory graph.  
+When you fly manually, your keypresses change the control command and that path updates live.
 
-- The drone is being driven through the same movement primitives used in manual keyboard mode.
-- The RGB panel is what the drone camera sees.
-- The depth panel shows estimated distance from the camera.
-- The top-down plot is the moving graph of the drone trajectory.
-- In manual mode, your keypresses change the waypoint or control command and the trajectory graph updates accordingly.
+**Obstacle slalom task**
+
+![Obstacle slalom demo](assets/obstacle_slalom_demo.gif)
+
+This scenario shows the drone trying to move through a sequence of obstacles rather than just flying to a point.  
+The top-down panel is useful here because you can immediately see whether the path is weaving cleanly or drifting into collisions.
+
+**Dynamic follow task**
+
+![Dynamic follow demo](assets/dynamic_follow_demo.gif)
+
+This task is about tracking a moving target instead of reaching a fixed goal.  
+The moving graph shows whether the drone trajectory stays close to the target path over time, which is useful for temporal-control debugging.
+
+**Narrow corridor task**
+
+![Narrow corridor demo](assets/narrow_corridor_demo.gif)
+
+This task stresses precision and safety in tight spaces.  
+The trajectory plot makes it obvious when the drone stays centered versus scraping into the corridor walls.
 
 ## What You Get
 

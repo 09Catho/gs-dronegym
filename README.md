@@ -20,25 +20,17 @@ GS-DroneGym starts from one very specific problem: **VLA-AN** identifies the vis
 
 ## Visuals
 
-**Interactive viewer with RGB, depth, overlays, and top-down trajectory**
-
-![GS-DroneGym viewer](assets/live_view_overlay.gif)
-
-**Keyboard flight layout for the live viewer**
-
-![Keyboard controls](assets/keyboard_controls.svg)
-
-**Scripted demo of the same movement primitives used in manual mode**
+**Keyboard-style flight demo**
 
 ![Keyboard demo](assets/keyboard_demo.gif)
 
-**First frame rendered from a real Gaussian scene**
+What this GIF means:
 
-![First real frame](assets/first_real_frame.png)
-
-**Planned synthetic dataset creation pipeline**
-
-![Synthetic dataset roadmap](assets/synthetic_dataset_plan.svg)
+- The drone is being driven through the same movement primitives used in manual keyboard mode.
+- The RGB panel is what the drone camera sees.
+- The depth panel shows estimated distance from the camera.
+- The top-down plot is the moving graph of the drone trajectory.
+- In manual mode, your keypresses change the waypoint or control command and the trajectory graph updates accordingly.
 
 ## What You Get
 

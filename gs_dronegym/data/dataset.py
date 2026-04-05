@@ -155,6 +155,11 @@ def load_dataset(
         ValueError: If the dataset format is unsupported.
     """
     if format == "gs_dronegym":
+        source_path = Path(source)
+        if (source_path / "manifest.json").exists():
+            from gs_dronegym.data.generation import load_generated_dataset
+
+            return load_generated_dataset(source_path)
         return load_common_dataset(source)
     if format == "libero":
         from gs_dronegym.benchmarks.libero import load_libero_dataset

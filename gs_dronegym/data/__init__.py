@@ -1,4 +1,4 @@
-"""Shared data contracts and dataset utilities for GS-DroneGym v0.2."""
+"""Shared data contracts and dataset utilities for GS-DroneGym v0.3."""
 
 from gs_dronegym.data.dataset import (
     TransitionRecord,
@@ -9,6 +9,21 @@ from gs_dronegym.data.dataset import (
     save_dataset,
     summarize_dataset,
 )
+from gs_dronegym.data.generation import (
+    CurriculumStageConfig,
+    DatasetGenerationConfig,
+    DatasetManifest,
+    PreviewSummary,
+    SceneSelectionConfig,
+    ShardManifest,
+    ValidationReport,
+    default_curriculum_stages,
+    generate_dataset,
+    load_generated_dataset,
+    preview_dataset_task,
+    validate_generated_dataset,
+)
+from gs_dronegym.data.planner import PlannerConfig
 from gs_dronegym.data.schema import (
     ActionSpec,
     BenchmarkReport,
@@ -22,16 +37,29 @@ from gs_dronegym.data.schema import (
 __all__ = [
     "ActionSpec",
     "BenchmarkReport",
+    "CurriculumStageConfig",
+    "DatasetGenerationConfig",
+    "DatasetManifest",
     "ObservationSpec",
+    "PlannerConfig",
+    "PreviewSummary",
+    "SceneSelectionConfig",
+    "ShardManifest",
     "TaskSpec",
     "TrajectoryEpisode",
     "TrajectoryStep",
     "TransitionRecord",
+    "ValidationReport",
+    "default_curriculum_stages",
+    "generate_dataset",
     "infer_observation_spec",
     "iter_transitions",
     "load_common_dataset",
     "load_dataset",
+    "load_generated_dataset",
+    "preview_dataset_task",
     "replay_episode",
     "save_dataset",
     "summarize_dataset",
+    "validate_generated_dataset",
 ]

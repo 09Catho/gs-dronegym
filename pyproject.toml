@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gs-dronegym"
-version = "0.2.0"
-description = "Drone-first photorealistic simulation plus cross-benchmark trajectory tooling for VLA research."
+version = "0.3.0"
+description = "Drone-first photorealistic simulation, synthetic dataset generation, and cross-benchmark trajectory tooling for VLA research."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -31,6 +31,7 @@ dependencies = [
   "plyfile>=0.9",
   "matplotlib>=3.7",
   "Pillow>=10.0",
+  "pyarrow>=16.0",
 ]
 
 [project.optional-dependencies]
@@ -66,6 +67,9 @@ gs-dronegym-inspect-dataset = "gs_dronegym.cli.inspect_dataset:main"
 gs-dronegym-train-bc = "gs_dronegym.cli.train_bc:main"
 gs-dronegym-evaluate = "gs_dronegym.cli.evaluate:main"
 gs-dronegym-live-view = "gs_dronegym.cli.live_viewer:main"
+gs-dronegym-generate-dataset = "gs_dronegym.cli.generate_dataset:main"
+gs-dronegym-preview-dataset-task = "gs_dronegym.cli.preview_dataset_task:main"
+gs-dronegym-validate-dataset = "gs_dronegym.cli.validate_dataset:main"
 
 [project.urls]
 Homepage = "https://github.com/09Catho/gs-dronegym"

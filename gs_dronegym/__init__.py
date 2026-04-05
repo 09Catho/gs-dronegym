@@ -18,11 +18,24 @@ from gs_dronegym.benchmarks import list_benchmarks, make_benchmark
 from gs_dronegym.data import (
     ActionSpec,
     BenchmarkReport,
+    CurriculumStageConfig,
+    DatasetGenerationConfig,
+    DatasetManifest,
     ObservationSpec,
+    PlannerConfig,
+    PreviewSummary,
+    SceneSelectionConfig,
+    ShardManifest,
     TaskSpec,
     TrajectoryEpisode,
     TrajectoryStep,
+    ValidationReport,
+    default_curriculum_stages,
+    generate_dataset,
     load_dataset,
+    load_generated_dataset,
+    preview_dataset_task,
+    validate_generated_dataset,
 )
 from gs_dronegym.env.drone_env import GSDroneEnv
 from gs_dronegym.scene.builtin_scenes import SceneInfo, get_scene, list_scenes
@@ -42,6 +55,9 @@ __all__ = [
     "BaseTask",
     "BenchmarkReport",
     "BenchmarkResult",
+    "CurriculumStageConfig",
+    "DatasetGenerationConfig",
+    "DatasetManifest",
     "DynamicFollowTask",
     "Episode",
     "GSDroneEnv",
@@ -49,22 +65,32 @@ __all__ = [
     "ObservationSpec",
     "ObjectNavTask",
     "ObstacleSlalomTask",
+    "PlannerConfig",
     "PointNavTask",
+    "PreviewSummary",
+    "SceneSelectionConfig",
     "SceneInfo",
+    "ShardManifest",
     "TaskSpec",
     "TaskConfig",
     "TrajectoryEpisode",
     "TrajectoryStep",
+    "ValidationReport",
     "__version__",
+    "default_curriculum_stages",
+    "generate_dataset",
     "get_scene",
     "list_benchmarks",
     "load_dataset",
+    "load_generated_dataset",
     "list_scenes",
     "make",
     "make_benchmark",
+    "preview_dataset_task",
+    "validate_generated_dataset",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 LOGGER = logging.getLogger(__name__)
 

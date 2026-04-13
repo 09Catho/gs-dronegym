@@ -63,13 +63,13 @@ You can immediately see whether the drone stays centered or clips the corridor w
 
 ## Install
 
-The package is currently installable from GitHub. It is **not on PyPI yet**, so this will fail until the first PyPI release is published:
+After the PyPI release is available:
 
 ```bash
 pip install gs-dronegym
 ```
 
-Use this instead:
+Until then, install from GitHub:
 
 ```bash
 pip install "gs-dronegym @ git+https://github.com/09Catho/gs-dronegym.git"
@@ -94,6 +94,8 @@ For LIBERO support:
 ```bash
 pip install "gs-dronegym[libero] @ git+https://github.com/09Catho/gs-dronegym.git"
 ```
+
+The `libero` extra only installs shared loader dependencies. Install the official LIBERO environment separately according to the upstream project you are using, because PyPI packages cannot depend on arbitrary GitHub repos.
 
 For LeRobot-format support:
 

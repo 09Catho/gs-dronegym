@@ -38,7 +38,6 @@ dependencies = [
 cuda = ["gsplat[cuda]"]
 libero = [
   "h5py>=3.10",
-  "libero @ git+https://github.com/huggingface/lerobot-libero.git",
 ]
 lerobot = [
   "datasets>=2.19",
@@ -51,7 +50,6 @@ benchmarks = [
   "h5py>=3.10",
   "huggingface_hub>=0.23",
   "lerobot>=0.3",
-  "libero @ git+https://github.com/huggingface/lerobot-libero.git",
   "pyarrow>=16.0",
 ]
 dev = [

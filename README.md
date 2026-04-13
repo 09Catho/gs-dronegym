@@ -63,40 +63,48 @@ You can immediately see whether the drone stays centered or clips the corridor w
 
 ## Install
 
-Core package:
+The package is currently installable from GitHub. It is **not on PyPI yet**, so this will fail until the first PyPI release is published:
 
 ```bash
 pip install gs-dronegym
 ```
 
-Editable install for development:
+Use this instead:
 
 ```bash
+pip install "gs-dronegym @ git+https://github.com/09Catho/gs-dronegym.git"
+```
+
+For development:
+
+```bash
+git clone https://github.com/09Catho/gs-dronegym.git
+cd gs-dronegym
 pip install -e .
 ```
 
-CUDA rendering:
+For CUDA rendering extras from GitHub:
 
 ```bash
-pip install gs-dronegym[cuda]
+pip install "gs-dronegym[cuda] @ git+https://github.com/09Catho/gs-dronegym.git"
 ```
 
-LIBERO support:
+For LIBERO support:
 
 ```bash
-pip install gs-dronegym[libero]
+pip install "gs-dronegym[libero] @ git+https://github.com/09Catho/gs-dronegym.git"
 ```
 
-LeRobot-format support:
+For LeRobot-format support:
 
 ```bash
-pip install gs-dronegym[lerobot]
+pip install "gs-dronegym[lerobot] @ git+https://github.com/09Catho/gs-dronegym.git"
 ```
 
-All benchmark extras:
+For all benchmark extras:
 
 ```bash
-pip install gs-dronegym[benchmarks]
+pip install "gs-dronegym[benchmarks] @ git+https://github.com/09Catho/gs-dronegym.git"
 ```
 
 ## 5-Minute Start

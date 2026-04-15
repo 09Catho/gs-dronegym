@@ -63,13 +63,30 @@ You can immediately see whether the drone stays centered or clips the corridor w
 
 ## Install
 
-After the PyPI release is available:
+GS-DroneGym requires **Python 3.10 or newer**.
+
+Check your Python version first:
+
+```bash
+python --version
+```
+
+Install from PyPI:
 
 ```bash
 pip install gs-dronegym
 ```
 
-Until then, install from GitHub:
+If you see `No matching distribution found for gs-dronegym`, you are probably using Python `3.9` or older. Create a Python 3.10+ environment and install again:
+
+```bash
+conda create -n gs-dronegym python=3.11 -y
+conda activate gs-dronegym
+python -m pip install --upgrade pip
+python -m pip install gs-dronegym
+```
+
+Install directly from GitHub:
 
 ```bash
 pip install "gs-dronegym @ git+https://github.com/09Catho/gs-dronegym.git"
@@ -86,13 +103,13 @@ pip install -e .
 For CUDA rendering extras from GitHub:
 
 ```bash
-pip install "gs-dronegym[cuda] @ git+https://github.com/09Catho/gs-dronegym.git"
+pip install "gs-dronegym[cuda]"
 ```
 
 For LIBERO support:
 
 ```bash
-pip install "gs-dronegym[libero] @ git+https://github.com/09Catho/gs-dronegym.git"
+pip install "gs-dronegym[libero]"
 ```
 
 The `libero` extra only installs shared loader dependencies. Install the official LIBERO environment separately according to the upstream project you are using, because PyPI packages cannot depend on arbitrary GitHub repos.
@@ -100,13 +117,13 @@ The `libero` extra only installs shared loader dependencies. Install the officia
 For LeRobot-format support:
 
 ```bash
-pip install "gs-dronegym[lerobot] @ git+https://github.com/09Catho/gs-dronegym.git"
+pip install "gs-dronegym[lerobot]"
 ```
 
 For all benchmark extras:
 
 ```bash
-pip install "gs-dronegym[benchmarks] @ git+https://github.com/09Catho/gs-dronegym.git"
+pip install "gs-dronegym[benchmarks]"
 ```
 
 ## 5-Minute Start

@@ -1,0 +1,312 @@
+{
+  "config": {
+    "dataset_root": "outputs\\paper_baseline_dataset",
+    "scenes": [
+      "mock://paper_a",
+      "mock://paper_b",
+      "mock://paper_c"
+    ],
+    "episodes_per_scene": 8,
+    "shard_size": 8,
+    "width": 96,
+    "height": 96,
+    "renderer_device": "cpu",
+    "allow_mock_rendering": true,
+    "dataset_id": "paper_baseline",
+    "seed": 42,
+    "epochs": 3,
+    "batch_size": 16,
+    "lr": 0.001,
+    "device": "cpu",
+    "eval_episodes": 5,
+    "checkpoint": "outputs\\paper_baseline_policy.pt",
+    "output": "paper\\paper_experiment_results.json",
+    "force": true
+  },
+  "timings_s": {
+    "generate_dataset": 34.51204390000021,
+    "validate_dataset": 28.02522450000015,
+    "train_behavior_cloning": 9.69646770000054,
+    "live_eval": 439.35221029999957
+  },
+  "manifest": {
+    "dataset_id": "paper_baseline",
+    "format_version": "gs_dronegym.synthetic.v1",
+    "created_at_utc": "2026-04-15T07:35:07.833479+00:00",
+    "config": {
+      "output_root": "outputs\\paper_baseline_dataset",
+      "scene_selection": {
+        "sources": [
+          "mock://paper_a",
+          "mock://paper_b",
+          "mock://paper_c"
+        ],
+        "train_fraction": 0.7,
+        "val_fraction": 0.15,
+        "test_fraction": 0.15
+      },
+      "planner": {
+        "waypoint_spacing_m": 0.75,
+        "lookahead_distance_m": 1.2,
+        "obstacle_clearance_m": 0.75,
+        "imminent_clearance_m": 0.6,
+        "recovery_clearance_m": 0.35,
+        "dynamic_target_lookahead_steps": 3,
+        "max_altitude_step_m": 0.6
+      },
+      "stages": [
+        {
+          "name": "stage1_scene_comprehension",
+          "weight": 0.2,
+          "task_ids": [
+            "object_nav",
+            "point_nav"
+          ],
+          "max_steps": 80,
+          "description": "Short scene grounding and pointing hops."
+        },
+        {
+          "name": "stage2_flight_skills",
+          "weight": 0.3,
+          "task_ids": [
+            "point_nav",
+            "obstacle_slalom",
+            "narrow_corridor"
+          ],
+          "max_steps": 120,
+          "description": "Core flight skills and obstacle-aware short-horizon clips."
+        },
+        {
+          "name": "stage3_long_horizon_navigation",
+          "weight": 0.5,
+          "task_ids": [
+            "point_nav",
+            "object_nav",
+            "dynamic_follow",
+            "obstacle_slalom",
+            "narrow_corridor"
+          ],
+          "max_steps": 200,
+          "description": "Long-horizon navigation and dynamic target tracking."
+        }
+      ],
+      "episodes_per_scene": 8,
+      "shard_size_episodes": 8,
+      "image_size": [
+        96,
+        96
+      ],
+      "renderer_device": "cpu",
+      "use_depth": true,
+      "action_mode": "waypoint",
+      "seed": 42,
+      "debug_export_episodes_per_split": 2,
+      "allow_mock_rendering": true,
+      "dataset_id": "paper_baseline"
+    },
+    "scene_splits": {
+      "paper_a": "test",
+      "paper_b": "val",
+      "paper_c": "train"
+    },
+    "shard_manifests": [
+      {
+        "shard_id": "test-00000",
+        "split": "test",
+        "parquet_path": "parquet\\test\\steps-test-00000.parquet",
+        "episode_ids": [
+          "paper_baseline-000000",
+          "paper_baseline-000001",
+          "paper_baseline-000002",
+          "paper_baseline-000003",
+          "paper_baseline-000004",
+          "paper_baseline-000005",
+          "paper_baseline-000006",
+          "paper_baseline-000007"
+        ],
+        "row_count": 209,
+        "scene_ids": [
+          "paper_a"
+        ],
+        "stage_names": [
+          "stage1_scene_comprehension",
+          "stage2_flight_skills",
+          "stage3_long_horizon_navigation"
+        ],
+        "status": "completed"
+      },
+      {
+        "shard_id": "val-00000",
+        "split": "val",
+        "parquet_path": "parquet\\val\\steps-val-00000.parquet",
+        "episode_ids": [
+          "paper_baseline-000008",
+          "paper_baseline-000009",
+          "paper_baseline-000010",
+          "paper_baseline-000011",
+          "paper_baseline-000012",
+          "paper_baseline-000013",
+          "paper_baseline-000014",
+          "paper_baseline-000015"
+        ],
+        "row_count": 225,
+        "scene_ids": [
+          "paper_b"
+        ],
+        "stage_names": [
+          "stage1_scene_comprehension",
+          "stage2_flight_skills",
+          "stage3_long_horizon_navigation"
+        ],
+        "status": "completed"
+      },
+      {
+        "shard_id": "train-00000",
+        "split": "train",
+        "parquet_path": "parquet\\train\\steps-train-00000.parquet",
+        "episode_ids": [
+          "paper_baseline-000016",
+          "paper_baseline-000017",
+          "paper_baseline-000018",
+          "paper_baseline-000019",
+          "paper_baseline-000020",
+          "paper_baseline-000021",
+          "paper_baseline-000022",
+          "paper_baseline-000023"
+        ],
+        "row_count": 159,
+        "scene_ids": [
+          "paper_c"
+        ],
+        "stage_names": [
+          "stage1_scene_comprehension",
+          "stage2_flight_skills",
+          "stage3_long_horizon_navigation"
+        ],
+        "status": "completed"
+      }
+    ],
+    "counts": {
+      "n_episodes": 24,
+      "n_shards": 3,
+      "stage_counts": {
+        "stage1_scene_comprehension": 6,
+        "stage2_flight_skills": 6,
+        "stage3_long_horizon_navigation": 12
+      },
+      "split_counts": {
+        "test": 8,
+        "val": 8,
+        "train": 8
+      },
+      "task_counts": {
+        "object_nav": 4,
+        "point_nav": 7,
+        "narrow_corridor": 6,
+        "obstacle_slalom": 5,
+        "dynamic_follow": 2
+      }
+    }
+  },
+  "validation": {
+    "dataset_id": "paper_baseline",
+    "n_episodes": 24,
+    "n_steps": 593,
+    "split_counts": {
+      "test": 8,
+      "train": 8,
+      "val": 8
+    },
+    "stage_counts": {
+      "stage1_scene_comprehension": 6,
+      "stage2_flight_skills": 6,
+      "stage3_long_horizon_navigation": 12
+    },
+    "task_counts": {
+      "object_nav": 4,
+      "point_nav": 7,
+      "narrow_corridor": 6,
+      "obstacle_slalom": 5,
+      "dynamic_follow": 2
+    },
+    "scene_counts": {
+      "paper_a": 8,
+      "paper_c": 8,
+      "paper_b": 8
+    },
+    "instruction_coverage": {
+      "navigate to the center zone": 2,
+      "fly to position (6.1, 1.6, 1.7)": 1,
+      "fly through the narrow corridor": 6,
+      "weave through all the obstacles ahead": 5,
+      "follow the moving target": 2,
+      "fly to position (-7.1, 8.4, 2.0)": 1,
+      "fly to position (-3.5, -6.5, 2.6)": 1,
+      "navigate to the south bay": 2,
+      "fly to position (8.8, 6.5, 2.7)": 1,
+      "fly to position (-5.0, 5.2, 1.7)": 1,
+      "fly to position (7.8, -7.1, 3.0)": 1,
+      "fly to position (-2.9, -1.9, 1.5)": 1
+    },
+    "success_rate": 0.0,
+    "collision_rate": 0.0387858347386172,
+    "waypoint_magnitude_mean": 6.6554036140441895,
+    "valid": true
+  },
+  "training": {
+    "n_examples": 159,
+    "action_dim": 4,
+    "final_train_loss": 0.03323201835155487,
+    "train_loss_history": [
+      0.13292676210403442,
+      0.055119454860687256,
+      0.03323201835155487
+    ],
+    "checkpoint_path": "outputs\\paper_baseline_policy.pt"
+  },
+  "dataset_eval": {
+    "train": {
+      "action_mse": 0.0338548980653286,
+      "action_mae": 0.12683242559432983
+    },
+    "val": {
+      "action_mse": 0.1829461008310318,
+      "action_mae": 0.3113461434841156
+    }
+  },
+  "live_eval": {
+    "zero": {
+      "success_rate": 0.0,
+      "mean_return": -2.0,
+      "mean_episode_length": 200.0,
+      "collision_rate": 0.0,
+      "spl": 0.0,
+      "mean_path_length": 0.0
+    },
+    "random": {
+      "success_rate": 0.0,
+      "mean_return": -15.320169448852539,
+      "mean_episode_length": 65.0,
+      "collision_rate": 1.0,
+      "spl": 0.0,
+      "mean_path_length": 9.64550495147705
+    },
+    "behavior_cloning": {
+      "success_rate": 0.0,
+      "mean_return": -12.031694412231445,
+      "mean_episode_length": 24.600000381469727,
+      "collision_rate": 1.0,
+      "spl": 0.0,
+      "mean_path_length": 3.5379185676574707
+    }
+  },
+  "training_config": {
+    "epochs": 3,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "device": "cpu",
+    "hidden_dim": 128,
+    "instruction_dim": 128,
+    "num_workers": 0
+  }
+}

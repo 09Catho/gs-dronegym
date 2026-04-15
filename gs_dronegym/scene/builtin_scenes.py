@@ -32,7 +32,7 @@ BUILTIN_SCENES: dict[str, SceneInfo] = {
         name="garden",
         url=(
             "https://huggingface.co/nerfbaselines/nerfbaselines/"
-            "resolve/main/gaussian-splatting/mipnerf360/garden/point_cloud.ply?download=true"
+            "resolve/main/gaussian-splatting/mipnerf360/garden.zip"
         ),
         description="MipNeRF360 outdoor garden scene.",
         bbox=np.array([[-4.0, -4.0, 0.2], [4.0, 4.0, 4.5]], dtype=np.float32),
@@ -43,7 +43,7 @@ BUILTIN_SCENES: dict[str, SceneInfo] = {
         name="room",
         url=(
             "https://huggingface.co/nerfbaselines/nerfbaselines/"
-            "resolve/main/gaussian-splatting/mipnerf360/room/point_cloud.ply?download=true"
+            "resolve/main/gaussian-splatting/mipnerf360/room.zip"
         ),
         description="MipNeRF360 indoor room scene.",
         bbox=np.array([[-3.0, -3.0, 0.2], [3.0, 3.0, 3.0]], dtype=np.float32),
@@ -54,7 +54,7 @@ BUILTIN_SCENES: dict[str, SceneInfo] = {
         name="bicycle",
         url=(
             "https://huggingface.co/nerfbaselines/nerfbaselines/"
-            "resolve/main/gaussian-splatting/mipnerf360/bicycle/point_cloud.ply?download=true"
+            "resolve/main/gaussian-splatting/mipnerf360/bicycle.zip"
         ),
         description="MipNeRF360 bicycle scene with outdoor clutter.",
         bbox=np.array([[-4.5, -4.0, 0.2], [4.5, 4.0, 4.0]], dtype=np.float32),
@@ -65,7 +65,7 @@ BUILTIN_SCENES: dict[str, SceneInfo] = {
         name="truck",
         url=(
             "https://huggingface.co/nerfbaselines/nerfbaselines/"
-            "resolve/main/gaussian-splatting/tanksandtemples/truck/point_cloud.ply?download=true"
+            "resolve/main/gaussian-splatting/tanksandtemples/truck.zip"
         ),
         description="Tanks and Temples truck scene.",
         bbox=np.array([[-5.0, -5.0, 0.2], [5.0, 5.0, 4.5]], dtype=np.float32),

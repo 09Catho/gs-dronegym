@@ -7,8 +7,10 @@ import json
 from pathlib import Path
 
 from gs_dronegym.data import (
+    CurriculumStageConfig,
     DatasetGenerationConfig,
     SceneSelectionConfig,
+    default_curriculum_stages,
     generate_dataset,
 )
 
@@ -53,7 +55,40 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Permit mock:// scene sources for tests and CPU-only runs.",
     )
+    parser.add_argument(
+        "--task-filter",
+        nargs="+",
+        default=None,
+        help=(
+            "Optional task IDs to keep, e.g. point_nav. Useful for focused "
+            "debug datasets before training on the full curriculum."
+        ),
+    )
     return parser
+
+
+def _filtered_stages(task_filter: list[str] | None) -> tuple[CurriculumStageConfig, ...]:
+    """Build curriculum stages after applying an optional task filter."""
+    if not task_filter:
+        return tuple()
+    allowed = set(task_filter)
+    stages: list[CurriculumStageConfig] = []
+    for stage in default_curriculum_stages():
+        task_ids = tuple(task_id for task_id in stage.task_ids if task_id in allowed)
+        if not task_ids:
+            continue
+        stages.append(
+            CurriculumStageConfig(
+                name=stage.name,
+                weight=stage.weight,
+                task_ids=task_ids,
+                max_steps=stage.max_steps,
+                description=f"{stage.description} Filtered to {', '.join(task_ids)}.",
+            )
+        )
+    if not stages:
+        raise ValueError(f"No curriculum stages contain requested task IDs: {sorted(allowed)}")
+    return tuple(stages)
 
 
 def main() -> None:
@@ -73,6 +108,7 @@ def main() -> None:
         image_size=(args.width, args.height),
         debug_export_episodes_per_split=args.debug_episodes,
         allow_mock_rendering=args.allow_mock_rendering,
+        stages=_filtered_stages(args.task_filter),
     )
     manifest = generate_dataset(config)
     print(json.dumps(manifest.to_dict(), indent=2))

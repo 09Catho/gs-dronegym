@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from gs_dronegym.data.planner import ExpertPlanner
 from gs_dronegym.env import GSDroneEnv
 from gs_dronegym.tasks import PointNavTask
 
@@ -69,3 +70,27 @@ def test_env_is_reproducible_given_same_seed() -> None:
     assert np.allclose(obs_a["state"], obs_b["state"])
     assert obs_a["instruction"] == obs_b["instruction"]
     assert np.allclose(info_a["drone_state"], info_b["drone_state"])
+
+
+def test_expert_planner_solves_live_pointnav() -> None:
+    """The geometric expert should solve seeded live PointNav rollouts."""
+    planner = ExpertPlanner()
+    for seed in range(3):
+        env = GSDroneEnv(task=PointNavTask(), scene_path=None, image_size=(32, 32))
+        obs, _ = env.reset(seed=seed)
+        terminated = False
+        truncated = False
+        info: dict[str, object] = {}
+        while not (terminated or truncated):
+            state = np.asarray(obs["state"], dtype=np.float32)
+            waypoint, _ = planner.plan_waypoint(
+                state=state,
+                goal_position=env.goal_position,
+                task=env.task,
+                scene_bbox=env.scene_bbox,
+                obs_dt=env.dynamics.config.obs_dt,
+            )
+            action = planner.normalized_waypoint_action(state, waypoint)
+            obs, _, terminated, truncated, info = env.step(action)
+        assert info["success"] is True
+        assert info["collision"] is False

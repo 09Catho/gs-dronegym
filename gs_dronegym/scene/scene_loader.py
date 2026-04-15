@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import urllib.parse
 import urllib.request
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -55,8 +56,50 @@ class SceneLoader:
             if not path_obj.exists():
                 raise FileNotFoundError(f"Scene file not found: {path_obj}")
 
+        if path_obj.suffix.lower() == ".zip":
+            path_obj = self._extract_first_ply(path_obj)
         self.validate_ply(path_obj)
         return path_obj
+
+    def _extract_first_ply(self, archive_path: Path) -> Path:
+        """Extract the first PLY file from a cached scene archive.
+
+        Args:
+            archive_path: Local ``.zip`` archive path.
+
+        Returns:
+            Extracted PLY path.
+
+        Raises:
+            SceneValidationError: If the archive does not contain a PLY file.
+        """
+        extract_dir = self.CACHE_DIR / archive_path.stem
+        extract_dir.mkdir(parents=True, exist_ok=True)
+        existing = sorted(extract_dir.rglob("*.ply"))
+        if existing:
+            return existing[0]
+
+        try:
+            with zipfile.ZipFile(archive_path) as archive:
+                ply_members = [
+                    item
+                    for item in archive.namelist()
+                    if item.lower().endswith(".ply") and not item.endswith("/")
+                ]
+                if not ply_members:
+                    raise SceneValidationError(
+                        f"Scene archive {archive_path} does not contain a .ply file."
+                    )
+                member = ply_members[0]
+                member_path = Path(member)
+                if member_path.is_absolute() or ".." in member_path.parts:
+                    raise SceneValidationError(
+                        f"Scene archive {archive_path} contains an unsafe path: {member}"
+                    )
+                archive.extract(member, extract_dir)
+                return extract_dir / member
+        except zipfile.BadZipFile as exc:
+            raise SceneValidationError(f"Scene archive is not a valid zip: {archive_path}") from exc
 
     def validate_ply(self, path: Path) -> bool:
         """Validate required Gaussian splat vertex properties.

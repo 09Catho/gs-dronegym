@@ -163,6 +163,12 @@ Keyboard mapping:
 gs-dronegym-generate-dataset outputs/synth_dataset --scenes mock://lab_a mock://lab_b --episodes-per-scene 12 --renderer-device cpu --allow-mock-rendering
 ```
 
+For a focused Live PointNav debugging dataset, keep only `point_nav`:
+
+```bash
+gs-dronegym-generate-dataset outputs/pointnav_debug_dataset --scenes mock://pn_a mock://pn_b --episodes-per-scene 100 --renderer-device cpu --allow-mock-rendering --task-filter point_nav
+```
+
 ### 4. Validate the generated dataset
 
 ```bash
@@ -209,6 +215,16 @@ For synthetic dataset generation on a real scene:
 ```bash
 gs-dronegym-generate-dataset outputs/real_dataset --scenes C:\path\to\scene.ply --episodes-per-scene 12 --renderer-device cuda
 ```
+
+You can also use the built-in public scene handles. These currently resolve to large NerfBaselines Gaussian Splatting archives hosted on Hugging Face, then cache and extract the contained `.ply` locally:
+
+```bash
+python -c "from gs_dronegym.scene import list_scenes; print(list_scenes())"
+python -c "from gs_dronegym.scene import get_scene; print(get_scene('room'))"
+gs-dronegym-live-view --env-id PointNav-v0 --scene room --renderer-device cuda --policy keyboard
+```
+
+Important: the public archives are multi-GB downloads. Use a local `.ply` if you already have one, and use mock rendering for quick CPU tests.
 
 ## Synthetic Dataset Factory
 
@@ -315,6 +331,12 @@ Evaluate:
 gs-dronegym-evaluate --benchmark gs_dronegym --env-id PointNav-v0 --n-episodes 5
 ```
 
+Evaluate the built-in geometric expert before blaming a learned policy:
+
+```bash
+gs-dronegym-evaluate-expert --env-id PointNav-v0 --scene None --n-episodes 10
+```
+
 Live viewer:
 
 ```bash
@@ -350,15 +372,16 @@ The [`examples/`](examples) folder includes:
 
 If you want real rendering instead of mock rendering:
 
-1. capture a real room or outdoor space with images/video
-2. build a Gaussian `.ply` with Nerfstudio or another 3DGS pipeline
-3. pass that `.ply` into GS-DroneGym
+1. use a built-in public scene handle such as `room`, `garden`, `bicycle`, or `truck`, or capture your own room/outdoor space
+2. if using your own capture, build a Gaussian `.ply` with Nerfstudio or another 3DGS pipeline
+3. pass the built-in handle or `.ply` into GS-DroneGym
 4. run the viewer or dataset generator on top of that real scene
 
 Example:
 
 ```bash
 gs-dronegym-live-view --env-id PointNav-v0 --scene C:\path\to\scene.ply --renderer-device cuda --policy keyboard
+gs-dronegym-live-view --env-id PointNav-v0 --scene room --renderer-device cuda --policy keyboard
 ```
 
 ## Next Phase

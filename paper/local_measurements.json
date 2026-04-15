@@ -1,0 +1,23 @@
+{
+  "python": "3.11.0",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "mock_renderer_fps_224": 148.42750704074624,
+  "mock_renderer_ms_per_frame_224": 6.737295666668311,
+  "env_steps_per_second_mock": 68.58237823798838,
+  "env_ms_per_step_mock": 14.581005000000005,
+  "env_resets_during_measurement": 6,
+  "zero_policy": {
+    "success_rate": 0.0,
+    "mean_return": -2.0,
+    "mean_episode_length": 200.0,
+    "collision_rate": 0.0,
+    "spl": 0.0
+  },
+  "random_policy": {
+    "success_rate": 0.0,
+    "mean_return": -13.116876602172852,
+    "mean_episode_length": 68.9000015258789,
+    "collision_rate": 1.0,
+    "spl": 0.0
+  }
+}

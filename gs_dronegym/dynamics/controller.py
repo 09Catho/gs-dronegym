@@ -90,8 +90,18 @@ class WaypointController:
         )
         desired_accel[2] += self.gravity
 
-        desired_roll = np.clip(desired_accel[1] / self.gravity, -0.35, 0.35)
-        desired_pitch = np.clip(-desired_accel[0] / self.gravity, -0.35, 0.35)
+        # With the body-to-world ZYX rotation used by QuadrotorDynamics,
+        # small-angle horizontal acceleration is:
+        # ax/g = cos(yaw) * pitch + sin(yaw) * roll
+        # ay/g = sin(yaw) * pitch - cos(yaw) * roll
+        # Invert that mapping so waypoint accelerations are expressed in the
+        # current yaw frame instead of only working when yaw is zero.
+        ax_norm = float(desired_accel[0] / self.gravity)
+        ay_norm = float(desired_accel[1] / self.gravity)
+        cos_yaw = float(np.cos(yaw))
+        sin_yaw = float(np.sin(yaw))
+        desired_pitch = np.clip(cos_yaw * ax_norm + sin_yaw * ay_norm, -0.35, 0.35)
+        desired_roll = np.clip(sin_yaw * ax_norm - cos_yaw * ay_norm, -0.35, 0.35)
         thrust_total = float(self.mass * desired_accel[2])
         thrust_cmd = thrust_total - self.mass * self.gravity
 

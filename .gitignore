@@ -11,6 +11,8 @@ __pycache__/
 .venv/
 venv/
 env/
+!gs_dronegym/env/
+!gs_dronegym/env/*.py
 
 # Packaging
 build/

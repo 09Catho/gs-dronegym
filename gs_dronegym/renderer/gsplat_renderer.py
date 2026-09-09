@@ -20,6 +20,9 @@ from gs_dronegym.scene.scene_loader import SceneLoader
 
 LOGGER = logging.getLogger(__name__)
 
+#: Accumulated alpha below which a ray is treated as having hit nothing.
+_MIN_ALPHA_FOR_DEPTH = 1e-3
+
 try:
     from gsplat import rasterization
 
@@ -185,7 +188,7 @@ class GSplatRenderer:
                 height=self.camera.height,
                 near_plane=self.near_plane,
                 far_plane=self.far_plane,
-                render_mode="RGB+D",
+                render_mode="RGB+ED",
                 sh_degree=self.sh_degree,
             )
         except Exception as exc:  # pragma: no cover - backend-dependent
@@ -200,7 +203,19 @@ class GSplatRenderer:
         render = renders[0].detach().cpu().numpy().astype(np.float32)
         alpha = np.squeeze(alphas[0].detach().cpu().numpy()).astype(np.float32)
         rgb = np.clip(render[..., :3], 0.0, 1.0)
-        depth = np.clip(render[..., 3], self.near_plane, self.far_plane).astype(np.float32)
+        # "ED" is expected depth, already normalized by accumulated alpha. The
+        # unnormalized "D" channel is an alpha-weighted sum, so treating it as
+        # metric depth collapses the whole image towards the near plane.
+        expected_depth = render[..., 3]
+        # Rays that accumulated almost no opacity hit nothing at all; reporting
+        # the far plane is truthful, whereas clamping them to the near plane
+        # would place a surface directly in front of the camera.
+        depth = np.where(
+            alpha > np.float32(_MIN_ALPHA_FOR_DEPTH),
+            expected_depth,
+            np.float32(self.far_plane),
+        )
+        depth = np.clip(depth, self.near_plane, self.far_plane).astype(np.float32)
         return {
             "rgb": (rgb * 255.0).astype(np.uint8),
             "depth": depth,

@@ -13,6 +13,9 @@ import numpy as np
 
 LOGGER = logging.getLogger(__name__)
 
+#: Downward mounting tilt of the default drone camera, in degrees.
+DEFAULT_CAMERA_TILT_DEG = 15.0
+
 
 class CameraModel:
     """Pinhole camera model attached to the drone body frame."""
@@ -92,11 +95,29 @@ class CameraModel:
     def _default_body_to_cam(self) -> np.ndarray:
         """Create the default forward-facing camera transform.
 
+        The drone body frame is x forward, y left, z up, while the pinhole
+        intrinsics and the Gaussian rasterizer both use the vision convention of
+        x right, y down and z along the optical axis. The two frames must be
+        related by an axis permutation as well as the mounting tilt; without it
+        the rasterizer treats a sideways axis as depth and renders a scene that
+        does not correspond to the drone's viewpoint at all.
+
         Returns:
-            Body-to-camera transform.
+            Camera-to-body transform, whose columns are the camera axes
+            expressed in body coordinates.
         """
-        tilt = np.deg2rad(-15.0)
-        rot_y = np.array(
+        # Camera x (right) = -body y, camera y (down) = -body z,
+        # camera z (forward) = +body x.
+        body_from_optical = np.array(
+            [
+                [0.0, 0.0, 1.0],
+                [-1.0, 0.0, 0.0],
+                [0.0, -1.0, 0.0],
+            ],
+            dtype=np.float32,
+        )
+        tilt = np.deg2rad(DEFAULT_CAMERA_TILT_DEG)
+        rot_body_y = np.array(
             [
                 [np.cos(tilt), 0.0, np.sin(tilt)],
                 [0.0, 1.0, 0.0],
@@ -105,7 +126,7 @@ class CameraModel:
             dtype=np.float32,
         )
         transform = np.eye(4, dtype=np.float32)
-        transform[:3, :3] = rot_y
+        transform[:3, :3] = (rot_body_y @ body_from_optical).astype(np.float32)
         transform[:3, 3] = np.array([0.1, 0.0, 0.02], dtype=np.float32)
         return transform
 

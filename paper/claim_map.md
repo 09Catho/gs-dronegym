@@ -47,3 +47,62 @@ The system is useful infrastructure but needs more real-scene experiments and ba
 
 What not to claim:
 Do not claim SOTA, exact VLA-AN dataset reproduction, real-drone deployment readiness, or solved sim-to-real transfer.
+
+## Validity of Behavior-Cloning Results Reported Before the Encoder Fix
+
+Every behavior-cloning number produced before the deterministic instruction
+encoder landed must be treated as unreliable. The pre-fix encoder bucketed
+instruction tokens with Python's built-in `hash`, which is salted per
+interpreter, so instruction features were not reproducible across processes or
+across runs. Two tiers apply.
+
+**Invalid — training and inference used different encoders.** Any result where
+the checkpoint was written by one process and loaded by another, which is the
+Appendix workflow of `gs-dronegym-train-bc` followed by
+`gs-dronegym-evaluate --policy`. The recorded artifact of this path,
+`outputs/paper_smoke_eval.json` (0/3 success, collision rate 1.0), measured a
+policy whose instruction features at inference time did not correspond to the
+features it was trained on. It is not evidence about the baseline and must not
+be cited.
+
+**Irreproducible — internally consistent but not repeatable.** The results in
+Tables `tab:smoke` and `tab:small-baselines` were produced by
+`paper/run_paper_experiments.py`, which trains and evaluates in a single
+process. Within one process `hash` is self-consistent, so training and
+inference agreed and these numbers were not corrupted. They were, however, not
+reproducible: each rerun drew a fresh hash salt, so `--seed 42` did not pin the
+instruction features. Treat them as single-sample observations, not as
+reproducible measurements.
+
+**Post-fix rerun.** `paper/run_paper_experiments.py` was rerun on commit
+`f97d964` plus the encoder fix, with the published configuration, writing to
+`outputs/postfix_baseline_dataset`, `outputs/postfix_baseline_policy.pt`, and
+`outputs/postfix_experiment_results.json`:
+
+| Policy | Episodes | Success | Collision | SPL |
+|---|---|---|---|---|
+| Zero action | 5 | 0/5 | 0/5 | 0.0 |
+| Random action | 5 | 0/5 | 3/5 | 0.0 |
+| Behavior cloning | 5 | 1/5 | 4/5 | 0.20 |
+
+Training: 393 train examples, 3 epochs, final train loss 0.0170. Offline
+imitation error: train MSE 0.0142, val MSE 0.0626.
+
+**Do not read this rerun as an effect of the encoder fix.** It is not a
+controlled comparison against the published table. `paper/paper_experiment_results.json`
+was written at 2026-04-15 13:13, and the PointNav control fix in commit
+`5a9297e` landed at 13:57 the same day, so the published numbers predate that
+fix. The same 24-episode configuration now yields 1327 dataset steps instead of
+593 because the corrected controller flies longer trajectories. The step-count
+change, not the encoder, dominates the difference between the two tables.
+
+What the encoder fix does establish is reproducibility. Evaluating
+`outputs/postfix_baseline_policy.pt` in two fresh interpreters with
+`PYTHONHASHSEED=1` and `PYTHONHASHSEED=98765` now returns bit-identical core and
+benchmark metrics, including `mean_path_length` 18.14236068725586 in both. The
+regression test `test_instruction_encoding_is_stable_across_process_hash_seeds`
+in `tests/test_bc.py` guards this.
+
+Checkpoints written before the fix carry no `instruction_encoder_version` and
+raise a `RuntimeWarning` on load. That includes `outputs/paper_smoke_policy.pt`
+and `outputs/paper_baseline_policy.pt`. Retrain rather than reusing them.

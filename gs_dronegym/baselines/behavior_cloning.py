@@ -8,9 +8,11 @@ across GS-DroneGym, LIBERO, and LeRobot-derived datasets.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import re
+import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import cast
@@ -27,9 +29,47 @@ LOGGER = logging.getLogger(__name__)
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9_]+")
 
+#: Version of the instruction feature encoder written into checkpoints.
+#:
+#: Version 1 is the first deterministic encoder. Checkpoints without a recorded
+#: version were produced by the pre-1 encoder, which used Python's built-in
+#: ``hash`` and is therefore not reproducible across processes.
+INSTRUCTION_ENCODER_VERSION = 1
+
+#: Sentinel recorded for checkpoints that predate encoder versioning.
+LEGACY_INSTRUCTION_ENCODER_VERSION = 0
+
+_LEGACY_ENCODER_WARNING = (
+    "This behavior-cloning checkpoint has no instruction_encoder_version and was "
+    "trained with the pre-1 encoder, which used Python's randomized built-in hash. "
+    "Those training-time instruction features cannot be reconstructed in any other "
+    "process, so predictions from this checkpoint do not correspond to what it was "
+    "trained on. Inference will use deterministic encoder version "
+    f"{INSTRUCTION_ENCODER_VERSION} and any metrics computed from this checkpoint "
+    "are unreliable. Retrain to obtain a valid policy."
+)
+
+
+def _stable_token_bucket(token: str, dimension: int) -> int:
+    """Map a token to a feature bucket deterministically across processes.
+
+    Args:
+        token: Lowercase instruction token.
+        dimension: Number of feature buckets.
+
+    Returns:
+        Bucket index in ``[0, dimension)``.
+    """
+    digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+    return int.from_bytes(digest, "big") % dimension
+
 
 def _hash_instruction(text: str, dimension: int) -> np.ndarray:
     """Convert free-form text into a fixed-size hashed bag-of-words vector.
+
+    Bucketing uses BLAKE2b so that the same instruction produces the same
+    features in every process and on every platform. Python's built-in ``hash``
+    is salted per interpreter and must not be used here.
 
     Args:
         text: Instruction string.
@@ -43,7 +83,7 @@ def _hash_instruction(text: str, dimension: int) -> np.ndarray:
     if not tokens:
         return features
     for token in tokens:
-        features[hash(token) % dimension] += 1.0
+        features[_stable_token_bucket(token, dimension)] += 1.0
     features /= np.float32(max(len(tokens), 1))
     return features
 
@@ -411,6 +451,7 @@ def train_behavior_cloning(
                     "instruction_dim": train_config.instruction_dim,
                     "hidden_dim": train_config.hidden_dim,
                     "image_channels": dataset.image_channels,
+                    "instruction_encoder_version": INSTRUCTION_ENCODER_VERSION,
                 },
             },
             checkpoint,
@@ -470,15 +511,36 @@ def evaluate_behavior_cloning(
 def load_behavior_cloning_policy(path: str | Path, device: str = "cpu") -> BehaviorCloningPolicy:
     """Load a saved behavior-cloning checkpoint.
 
+    Checkpoints written before instruction-encoder versioning load with a
+    ``RuntimeWarning`` because their training-time instruction features are not
+    reproducible.
+
     Args:
         path: Checkpoint path.
         device: Torch device to map the checkpoint onto.
 
     Returns:
         Restored behavior-cloning policy.
+
+    Raises:
+        ValueError: If the checkpoint requires a newer instruction encoder than
+            this build provides.
     """
     payload = torch.load(Path(path), map_location=device)
     model_spec = cast(dict[str, int], payload["model_spec"])
+    encoder_version = int(
+        model_spec.get("instruction_encoder_version", LEGACY_INSTRUCTION_ENCODER_VERSION)
+    )
+    if encoder_version == LEGACY_INSTRUCTION_ENCODER_VERSION:
+        LOGGER.warning("%s Checkpoint: %s", _LEGACY_ENCODER_WARNING, path)
+        warnings.warn(_LEGACY_ENCODER_WARNING, RuntimeWarning, stacklevel=2)
+    elif encoder_version > INSTRUCTION_ENCODER_VERSION:
+        raise ValueError(
+            f"Checkpoint {path} was written with instruction encoder version "
+            f"{encoder_version}, which this build of gs-dronegym "
+            f"(version {INSTRUCTION_ENCODER_VERSION}) cannot reproduce. Upgrade "
+            "gs-dronegym before loading this checkpoint."
+        )
     model = BehaviorCloningPolicy(
         action_dim=int(model_spec["action_dim"]),
         state_dim=int(model_spec["state_dim"]),

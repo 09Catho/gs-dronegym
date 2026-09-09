@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Protocol, runtime_checkable
+from typing import Protocol, cast, runtime_checkable
 
 import numpy as np
 
@@ -98,6 +98,88 @@ def build_task_breakdown(episodes: list[TrajectoryEpisode]) -> dict[str, dict[st
             "mean_episode_length": core_metrics["mean_episode_length"],
         }
     return breakdown
+
+
+#: Arrays with more elements than this are replaced by a shape/dtype reference
+#: when raw results are requested, so that reports stay a reviewable size.
+MAX_INLINE_ARRAY_ELEMENTS = 64
+
+
+def build_episode_summaries(episodes: list[TrajectoryEpisode]) -> list[dict[str, JsonValue]]:
+    """Summarize each episode without embedding observation media.
+
+    These summaries are always present in a report and are what most callers
+    previously read out of ``raw_results``.
+
+    Args:
+        episodes: Episodes to summarize.
+
+    Returns:
+        One compact JSON-safe record per episode.
+    """
+    summaries: list[dict[str, JsonValue]] = []
+    for episode in episodes:
+        summaries.append(
+            {
+                "episode_id": episode.episode_id,
+                "task_id": episode.task.task_id,
+                "instruction": episode.task.instruction,
+                "success": bool(episode.success),
+                "n_steps": int(episode.n_steps),
+                "total_reward": float(episode.total_reward),
+                "split": episode.split,
+            }
+        )
+    return summaries
+
+
+def _dereference_arrays(value: JsonValue) -> JsonValue:
+    """Replace large serialized arrays with a shape/dtype reference.
+
+    Small arrays such as actions and state vectors are kept inline. Image and
+    depth buffers are not: expanding them into nested JSON lists is what made
+    reports grow to hundreds of megabytes.
+
+    Args:
+        value: Serialized JSON-safe value.
+
+    Returns:
+        Value with oversized arrays replaced by references.
+    """
+    if isinstance(value, dict):
+        if value.get("__kind__") == "ndarray":
+            shape = cast(list[int], value.get("shape", []))
+            n_elements = 1
+            for dim in shape:
+                n_elements *= int(dim)
+            if n_elements > MAX_INLINE_ARRAY_ELEMENTS:
+                return {
+                    "__kind__": "ndarray_ref",
+                    "dtype": value.get("dtype"),
+                    "shape": cast(JsonValue, shape),
+                    "n_elements": n_elements,
+                    "omitted": True,
+                }
+            return value
+        return {key: _dereference_arrays(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_dereference_arrays(item) for item in value]
+    return value
+
+
+def build_raw_results(episodes: list[TrajectoryEpisode]) -> list[dict[str, JsonValue]]:
+    """Serialize full episodes with oversized arrays replaced by references.
+
+    Args:
+        episodes: Episodes to serialize.
+
+    Returns:
+        Per-episode dictionaries retaining structure but not media payloads.
+    """
+    return [
+        cast(dict[str, JsonValue], _dereference_arrays(cast(JsonValue, episode.to_dict())))
+        for episode in episodes
+    ]
 
 
 class BenchmarkAdapter(ABC):

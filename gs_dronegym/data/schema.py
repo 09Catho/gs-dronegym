@@ -480,6 +480,7 @@ class BenchmarkReport:
     benchmark_metrics: dict[str, float]
     task_breakdown: dict[str, dict[str, JsonValue]] = field(default_factory=dict)
     metadata: dict[str, JsonValue] = field(default_factory=dict)
+    episode_summaries: list[dict[str, JsonValue]] = field(default_factory=list)
     raw_results: list[dict[str, JsonValue]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, JsonValue]:
@@ -498,6 +499,7 @@ class BenchmarkReport:
             },
             "task_breakdown": self.task_breakdown,
             "metadata": self.metadata,
+            "episode_summaries": self.episode_summaries,
             "raw_results": self.raw_results,
         }
 

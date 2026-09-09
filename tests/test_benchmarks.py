@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pytest
 
 from gs_dronegym import list_benchmarks, load_dataset, make_benchmark
 from gs_dronegym.benchmarks.drone import DroneBenchmark
+from gs_dronegym.cli import evaluate as evaluate_cli
+from gs_dronegym.cli._scene import normalize_scene_arg
 
 
 def test_list_benchmarks_exposes_supported_adapters() -> None:
@@ -106,3 +109,68 @@ def test_load_lerobot_dataset_from_synthetic_parquet(tmp_path: Path) -> None:
     assert len(episodes) == 1
     assert episodes[0].task.instruction == "pick block"
     assert episodes[0].steps[-1].terminated is True
+
+
+def test_report_omits_raw_results_by_default() -> None:
+    """Reports must not embed per-step records unless explicitly requested."""
+    benchmark = make_benchmark("gs_dronegym", env_id="PointNav-v0", scene=None)
+    report = benchmark.evaluate_policy(policy=None, n_episodes=1, seed=0)
+    payload = report.to_dict()
+
+    assert payload["raw_results"] == []
+    summaries = payload["episode_summaries"]
+    assert isinstance(summaries, list) and len(summaries) == 1
+    assert set(summaries[0]) >= {"episode_id", "task_id", "success", "n_steps", "total_reward"}
+    assert len(json.dumps(payload)) < 100_000
+
+
+def test_raw_results_reference_media_instead_of_inlining_it() -> None:
+    """Opt-in raw results must replace image buffers with shape references."""
+    benchmark = make_benchmark("gs_dronegym", env_id="PointNav-v0", scene=None)
+    report = benchmark.evaluate_policy(
+        policy=None,
+        n_episodes=1,
+        seed=0,
+        include_raw_results=True,
+    )
+    payload = report.to_dict()
+    raw = payload["raw_results"]
+    assert isinstance(raw, list) and len(raw) == 1
+
+    serialized = json.dumps(payload)
+    assert '"__kind__": "ndarray_ref"' in serialized
+    # A single 224x224x3 frame expands to roughly 600 KB of JSON when inlined.
+    assert len(serialized) < 2_000_000
+
+    steps = cast(list[dict[str, object]], cast(dict[str, object], raw[0])["steps"])
+    rgb = cast(dict[str, object], cast(dict[str, object], steps[0]["observation"])["rgb"])
+    assert rgb["__kind__"] == "ndarray_ref"
+    assert rgb["omitted"] is True
+    assert rgb["shape"] == [224, 224, 3]
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (None, None),
+        ("None", None),
+        ("none", None),
+        ("NONE", None),
+        ("null", None),
+        ("", None),
+        ("  none  ", None),
+        ("garden", "garden"),
+        ("C:/scenes/room.ply", "C:/scenes/room.ply"),
+    ],
+)
+def test_scene_argument_normalization(raw: str | None, expected: str | None) -> None:
+    """All CLIs must agree on which --scene values mean "no scene"."""
+    assert normalize_scene_arg(raw) == expected
+
+
+def test_evaluate_cli_normalizes_literal_none_scene() -> None:
+    """`--scene None` must not reach the benchmark as a literal scene handle."""
+    parser = evaluate_cli.build_parser()
+    args = parser.parse_args(["--benchmark", "gs_dronegym", "--scene", "None"])
+    assert normalize_scene_arg(args.scene) is None
+    assert args.include_raw_results is False

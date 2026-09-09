@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from gs_dronegym.cli._scene import normalize_scene_arg
 from gs_dronegym.data import preview_dataset_task
 
 
@@ -36,7 +37,7 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     summary = preview_dataset_task(
-        scene=None if args.scene in {None, "None"} else args.scene,
+        scene=normalize_scene_arg(args.scene),
         stage_name=args.stage,
         task_id=args.task_id,
         steps=args.steps,

@@ -17,6 +17,7 @@ import numpy as np
 from matplotlib import animation
 
 import gs_dronegym
+from gs_dronegym.cli._scene import normalize_scene_arg
 
 
 @dataclass(slots=True)
@@ -80,9 +81,7 @@ def _normalize_scene(scene: str | None) -> str | None:
     Returns:
         Normalized scene value or ``None``.
     """
-    if scene in {None, "None", "none"}:
-        return None
-    return scene
+    return normalize_scene_arg(scene)
 
 
 def _depth_to_rgb(depth: np.ndarray) -> np.ndarray:

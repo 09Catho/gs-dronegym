@@ -18,6 +18,8 @@ import numpy as np
 
 from gs_dronegym.benchmarks.base import (
     BenchmarkAdapter,
+    build_episode_summaries,
+    build_raw_results,
     build_task_breakdown,
     call_policy,
     compute_core_metrics,
@@ -299,6 +301,7 @@ class LiberoBenchmark(BenchmarkAdapter):
         policy: object | None = None,
         source: str | None = None,
         max_episodes: int = 10,
+        include_raw_results: bool = False,
     ) -> BenchmarkReport:
         """Evaluate a policy against LIBERO data or environments.
 
@@ -308,6 +311,9 @@ class LiberoBenchmark(BenchmarkAdapter):
                 returned. When omitted, a custom or official LIBERO env bridge is
                 required.
             max_episodes: Maximum number of episodes to evaluate.
+            include_raw_results: Include per-step episode records. Arrays larger
+                than ``MAX_INLINE_ARRAY_ELEMENTS`` are replaced by shape/dtype
+                references, so observation media is never inlined.
 
         Returns:
             Normalized benchmark report.
@@ -327,7 +333,8 @@ class LiberoBenchmark(BenchmarkAdapter):
                 benchmark_metrics=benchmark_metrics,
                 task_breakdown=build_task_breakdown(episodes),
                 metadata={"suite_name": self.suite_name, "source": source},
-                raw_results=[episode.to_dict() for episode in episodes],
+                episode_summaries=build_episode_summaries(episodes),
+                raw_results=build_raw_results(episodes) if include_raw_results else [],
             )
 
         if self.env_factory is None:
@@ -385,5 +392,6 @@ class LiberoBenchmark(BenchmarkAdapter):
             benchmark_metrics={"live_eval_success_rate": core_metrics["success_rate"]},
             task_breakdown=build_task_breakdown(collected),
             metadata={"suite_name": self.suite_name},
-            raw_results=[episode.to_dict() for episode in collected],
+            episode_summaries=build_episode_summaries(collected),
+            raw_results=build_raw_results(collected) if include_raw_results else [],
         )

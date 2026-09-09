@@ -14,15 +14,9 @@ from typing import cast
 import numpy as np
 
 import gs_dronegym
+from gs_dronegym.cli._scene import normalize_scene_arg
 from gs_dronegym.data.planner import ExpertPlanner, PlannerConfig
 from gs_dronegym.utils.metrics import Episode, avg_speed, collision_rate, path_length, spl
-
-
-def _scene_arg(value: str | None) -> str | Path | None:
-    """Convert CLI scene text into a scene handle."""
-    if value is None or value.lower() in {"none", "null"}:
-        return None
-    return value
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -44,7 +38,7 @@ def evaluate_expert(args: argparse.Namespace) -> dict[str, object]:
     planner = ExpertPlanner(PlannerConfig())
     episodes: list[Episode] = []
     episode_rows: list[dict[str, object]] = []
-    scene = _scene_arg(cast(str | None, args.scene))
+    scene = normalize_scene_arg(cast(str | None, args.scene))
 
     for episode_index in range(args.n_episodes):
         env = gs_dronegym.make(

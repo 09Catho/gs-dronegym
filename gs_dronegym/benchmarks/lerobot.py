@@ -17,6 +17,8 @@ import numpy as np
 
 from gs_dronegym.benchmarks.base import (
     BenchmarkAdapter,
+    build_episode_summaries,
+    build_raw_results,
     build_task_breakdown,
     call_policy,
     compute_core_metrics,
@@ -318,6 +320,7 @@ class LeRobotBenchmark(BenchmarkAdapter):
         policy: object | None = None,
         source: str | None = None,
         episodes: list[TrajectoryEpisode] | None = None,
+        include_raw_results: bool = False,
     ) -> BenchmarkReport:
         """Evaluate a policy against a LeRobot-format dataset.
 
@@ -325,6 +328,9 @@ class LeRobotBenchmark(BenchmarkAdapter):
             policy: Policy callable or predictor object.
             source: Dataset source path.
             episodes: Optional preloaded episodes.
+            include_raw_results: Include per-step episode records. Arrays larger
+                than ``MAX_INLINE_ARRAY_ELEMENTS`` are replaced by shape/dtype
+                references, so observation media is never inlined.
 
         Returns:
             Standardized benchmark report.
@@ -354,5 +360,6 @@ class LeRobotBenchmark(BenchmarkAdapter):
             benchmark_metrics=benchmark_metrics,
             task_breakdown=build_task_breakdown(episodes),
             metadata={"source": source or "in_memory"},
-            raw_results=[episode.to_dict() for episode in episodes],
+            episode_summaries=build_episode_summaries(episodes),
+            raw_results=build_raw_results(episodes) if include_raw_results else [],
         )

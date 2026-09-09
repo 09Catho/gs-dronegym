@@ -15,6 +15,8 @@ import numpy as np
 
 from gs_dronegym.benchmarks.base import (
     BenchmarkAdapter,
+    build_episode_summaries,
+    build_raw_results,
     build_task_breakdown,
     call_policy,
     compute_core_metrics,
@@ -221,6 +223,7 @@ class DroneBenchmark(BenchmarkAdapter):
         policy: object | None = None,
         n_episodes: int = 10,
         seed: int = 0,
+        include_raw_results: bool = False,
     ) -> BenchmarkReport:
         """Evaluate a policy in live drone simulation.
 
@@ -228,6 +231,9 @@ class DroneBenchmark(BenchmarkAdapter):
             policy: Policy callable or predictor object.
             n_episodes: Number of episodes to run.
             seed: Base RNG seed.
+            include_raw_results: Include per-step episode records. Arrays larger
+                than ``MAX_INLINE_ARRAY_ELEMENTS`` are replaced by shape/dtype
+                references, so observation media is never inlined.
 
         Returns:
             Standardized benchmark report.
@@ -260,5 +266,6 @@ class DroneBenchmark(BenchmarkAdapter):
                 "env_id": self.env_id,
                 "scene": "" if self.scene is None else str(self.scene),
             },
-            raw_results=[episode.to_dict() for episode in episodes],
+            episode_summaries=build_episode_summaries(episodes),
+            raw_results=build_raw_results(episodes) if include_raw_results else [],
         )

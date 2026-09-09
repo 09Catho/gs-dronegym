@@ -38,6 +38,17 @@ class VisualAugmentor:
         self.config = config
         self._rng = np.random.default_rng()
 
+    def set_rng(self, rng: np.random.Generator) -> None:
+        """Adopt an externally owned random generator.
+
+        Without this the augmentor draws from operating-system entropy, which
+        makes augmented observations irreproducible even at a fixed seed.
+
+        Args:
+            rng: Generator owned by the caller.
+        """
+        self._rng = rng
+
     def apply(
         self,
         rgb: np.ndarray,

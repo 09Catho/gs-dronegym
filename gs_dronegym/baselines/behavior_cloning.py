@@ -8,10 +8,8 @@ across GS-DroneGym, LIBERO, and LeRobot-derived datasets.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
-import re
 import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -24,20 +22,13 @@ from torch.utils.data import DataLoader, Dataset
 
 from gs_dronegym.data.dataset import iter_transitions
 from gs_dronegym.data.schema import JsonValue, TrajectoryEpisode
+from gs_dronegym.utils.instruction_encoder import (
+    INSTRUCTION_ENCODER_VERSION,
+    LEGACY_INSTRUCTION_ENCODER_VERSION,
+    encode_instruction,
+)
 
 LOGGER = logging.getLogger(__name__)
-
-TOKEN_PATTERN = re.compile(r"[a-z0-9_]+")
-
-#: Version of the instruction feature encoder written into checkpoints.
-#:
-#: Version 1 is the first deterministic encoder. Checkpoints without a recorded
-#: version were produced by the pre-1 encoder, which used Python's built-in
-#: ``hash`` and is therefore not reproducible across processes.
-INSTRUCTION_ENCODER_VERSION = 1
-
-#: Sentinel recorded for checkpoints that predate encoder versioning.
-LEGACY_INSTRUCTION_ENCODER_VERSION = 0
 
 _LEGACY_ENCODER_WARNING = (
     "This behavior-cloning checkpoint has no instruction_encoder_version and was "
@@ -49,43 +40,8 @@ _LEGACY_ENCODER_WARNING = (
     "are unreliable. Retrain to obtain a valid policy."
 )
 
-
-def _stable_token_bucket(token: str, dimension: int) -> int:
-    """Map a token to a feature bucket deterministically across processes.
-
-    Args:
-        token: Lowercase instruction token.
-        dimension: Number of feature buckets.
-
-    Returns:
-        Bucket index in ``[0, dimension)``.
-    """
-    digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
-    return int.from_bytes(digest, "big") % dimension
-
-
-def _hash_instruction(text: str, dimension: int) -> np.ndarray:
-    """Convert free-form text into a fixed-size hashed bag-of-words vector.
-
-    Bucketing uses BLAKE2b so that the same instruction produces the same
-    features in every process and on every platform. Python's built-in ``hash``
-    is salted per interpreter and must not be used here.
-
-    Args:
-        text: Instruction string.
-        dimension: Output vector dimension.
-
-    Returns:
-        Dense float32 feature vector.
-    """
-    features = np.zeros(dimension, dtype=np.float32)
-    tokens = TOKEN_PATTERN.findall(text.lower())
-    if not tokens:
-        return features
-    for token in tokens:
-        features[_stable_token_bucket(token, dimension)] += 1.0
-    features /= np.float32(max(len(tokens), 1))
-    return features
+#: Backwards-compatible alias for the shared deterministic encoder.
+_hash_instruction = encode_instruction
 
 
 def _prepare_image(observation: dict[str, object]) -> np.ndarray | None:

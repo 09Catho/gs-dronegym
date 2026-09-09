@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from gs_dronegym.scene.occupancy import OccupancyGrid
 from gs_dronegym.tasks.base_task import BoxObstacle, CylinderObstacle, Obstacle
 
 LOGGER = logging.getLogger(__name__)
@@ -51,6 +52,8 @@ class QuadrotorDynamics:
             dtype=np.float32,
         )
         self.obstacles: list[Obstacle] = []
+        self.occupancy: OccupancyGrid | None = None
+        self.body_radius: float = 0.0
         self._substeps = max(1, int(round(self.config.obs_dt / self.config.sim_dt)))
 
     @property
@@ -85,15 +88,26 @@ class QuadrotorDynamics:
         self,
         scene_bbox: np.ndarray,
         obstacles: list[Obstacle] | None = None,
+        occupancy: OccupancyGrid | None = None,
+        body_radius: float = 0.0,
     ) -> None:
         """Set the scene collision geometry.
 
         Args:
             scene_bbox: Scene bounding box as a ``(2, 3)`` array.
             obstacles: Optional list of obstacles.
+            occupancy: Optional voxel occupancy derived from the scene's own
+                Gaussians. When supplied, collisions reflect the geometry that
+                actually produces the rendered image rather than hand-authored
+                primitives alone.
+            body_radius: Drone radius in metres. A positive radius probes the
+                occupancy grid around the body centre so that a thin
+                reconstructed surface cannot be crossed between substeps.
         """
         self.scene_bbox = np.asarray(scene_bbox, dtype=np.float32).reshape(2, 3)
         self.obstacles = list(obstacles or [])
+        self.occupancy = occupancy
+        self.body_radius = float(body_radius)
 
     def step(self, action: np.ndarray) -> tuple[np.ndarray, bool]:
         """Advance the dynamics by one observation interval.
@@ -282,6 +296,29 @@ class QuadrotorDynamics:
         yaw_dot = q * np.sin(roll) * sec_pitch + r * np.cos(roll) * sec_pitch
         return np.array([roll_dot, pitch_dot, yaw_dot], dtype=np.float32)
 
+    def _body_probe_points(self, position: np.ndarray) -> np.ndarray:
+        """Return occupancy probe points covering the drone body.
+
+        Args:
+            position: Drone centre position.
+
+        Returns:
+            Array of probe points with shape ``(n, 3)``.
+        """
+        centre = np.asarray(position, dtype=np.float32).reshape(1, 3)
+        if self.body_radius <= 0.0:
+            return centre
+        offsets = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0], [-1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0], [0.0, -1.0, 0.0],
+                [0.0, 0.0, 1.0], [0.0, 0.0, -1.0],
+            ],
+            dtype=np.float32,
+        )
+        return (centre + offsets * np.float32(self.body_radius)).astype(np.float32)
+
     def _check_collision(self, state: np.ndarray) -> bool:
         """Check collisions against the scene bounds and task obstacles.
 
@@ -295,6 +332,10 @@ class QuadrotorDynamics:
         if position[2] < 0.0:
             return True
         if np.any(position < self.scene_bbox[0]) or np.any(position > self.scene_bbox[1]):
+            return True
+        if self.occupancy is not None and bool(
+            np.any(self.occupancy.is_occupied(self._body_probe_points(position)))
+        ):
             return True
         for obstacle in self.obstacles:
             if isinstance(obstacle, CylinderObstacle) and self._collides_cylinder(

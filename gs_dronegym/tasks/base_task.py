@@ -70,13 +70,27 @@ class BaseTask(ABC):
         self.instruction = ""
 
     def seed(self, seed: int | None) -> None:
-        """Seed the task RNG.
+        """Seed the task RNG with a freshly constructed generator.
+
+        Prefer :meth:`set_rng` when the task is driven by an environment, so
+        that the environment owns a single reproducible random stream.
 
         Args:
             seed: RNG seed. If ``None``, the generator is reinitialized
                 nondeterministically.
         """
         self._rng = np.random.default_rng(seed)
+
+    def set_rng(self, rng: np.random.Generator) -> None:
+        """Adopt an externally owned random generator.
+
+        The task draws from this generator directly rather than copying it, so
+        successive episodes continue one stream instead of restarting it.
+
+        Args:
+            rng: Generator owned by the caller.
+        """
+        self._rng = rng
 
     @abstractmethod
     def reset(self, scene_bbox: np.ndarray) -> tuple[np.ndarray, np.ndarray, str]:

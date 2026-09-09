@@ -104,14 +104,19 @@ class GSplatRenderer:
             axis=1,
         )
 
-        scales = np.stack(
-            [
-                np.asarray(vertex["scale_0"], dtype=np.float32),
-                np.asarray(vertex["scale_1"], dtype=np.float32),
-                np.asarray(vertex["scale_2"], dtype=np.float32),
-            ],
-            axis=1,
-        )
+        # Gaussian PLY files store scale as a logarithm, matching the original
+        # 3D Gaussian Splatting export. Passing the raw values to the rasterizer
+        # yields negative scales and a degenerate covariance for every Gaussian.
+        scales = np.exp(
+            np.stack(
+                [
+                    np.asarray(vertex["scale_0"], dtype=np.float32),
+                    np.asarray(vertex["scale_1"], dtype=np.float32),
+                    np.asarray(vertex["scale_2"], dtype=np.float32),
+                ],
+                axis=1,
+            )
+        ).astype(np.float32)
         quats = np.stack(
             [
                 np.asarray(vertex["rot_0"], dtype=np.float32),

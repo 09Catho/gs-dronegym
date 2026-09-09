@@ -21,6 +21,9 @@ LOGGER = logging.getLogger(__name__)
 #: Logit opacity corresponding to an almost fully opaque Gaussian.
 _OPAQUE_LOGIT = np.float32(5.0)
 
+#: Zeroth-order spherical-harmonic basis constant used to encode colour.
+_SH_C0 = np.float32(0.28209479177387814)
+
 
 @dataclass(slots=True)
 class SyntheticRoomConfig:
@@ -138,10 +141,15 @@ def write_synthetic_room_ply(
         vertex[f"scale_{axis}"] = log_scale
     vertex["rot_0"] = np.float32(1.0)
 
+    # Colour is stored as the zeroth spherical-harmonic coefficient, which a
+    # reader converts back with ``0.5 + C0 * dc``. Writing display colours here
+    # directly would make the fixture decode to the wrong appearance.
     height_fraction = points[:, 2] / max(room.size[2], 1e-6)
-    vertex["f_dc_0"] = (0.5 + 0.5 * height_fraction).astype(np.float32)
-    vertex["f_dc_1"] = np.float32(0.4)
-    vertex["f_dc_2"] = (1.0 - 0.5 * height_fraction).astype(np.float32)
+    red = 0.5 + 0.5 * height_fraction
+    green = np.full_like(red, 0.4, dtype=np.float32)
+    blue = 1.0 - 0.5 * height_fraction
+    for channel, colour in enumerate((red, green, blue)):
+        vertex[f"f_dc_{channel}"] = ((colour - 0.5) / _SH_C0).astype(np.float32)
 
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)

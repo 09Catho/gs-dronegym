@@ -106,3 +106,52 @@ in `tests/test_bc.py` guards this.
 Checkpoints written before the fix carry no `instruction_encoder_version` and
 raise a `RuntimeWarning` on load. That includes `outputs/paper_smoke_policy.pt`
 and `outputs/paper_baseline_policy.pt`. Retrain rather than reusing them.
+
+## Real Gaussian Renderer: Status and Verified Evidence
+
+Statements about real-scene rendering made before 2026-09-10 are withdrawn.
+Three independent defects meant the `gsplat` path had never produced a
+geometrically correct image since the renderer shipped in `b21712d`:
+
+1. Gaussian scales were passed to the rasterizer as stored. The PLY format
+   holds the logarithm of the scale, so the rasterizer received negative
+   scales, for example -2.590 where 0.075 m was intended, giving every
+   Gaussian in the scene a degenerate covariance.
+2. The camera frame was never converted between the drone body convention
+   (x forward, y left, z up) and the vision convention the intrinsics and the
+   rasterizer both assume (x right, y down, z forward). A point 8 m directly
+   ahead mapped to camera-frame z = -2.06, behind the camera.
+3. Depth used render mode `RGB+D`, which is an alpha-weighted accumulation
+   rather than metric depth. Treating it as metric and clipping to the near
+   plane collapsed the whole image to roughly 0.10 m.
+
+None of these were reachable on the development workstation, where `gsplat`
+cannot build its CUDA extension and the renderer silently falls back to the
+mock path. The mock renderer reads only the camera height out of the inverse
+transform, so the full test suite passed throughout with the camera facing the
+wrong way.
+
+**Verified after the fixes.** Rendering a synthetic Gaussian room with real
+`gsplat` on an NVIDIA T4 (CUDA 12.4, torch 2.6.0+cu124, 9468 Gaussians) and
+comparing rendered depth against the occupancy grid derived from the same
+Gaussians, over 851 rays:
+
+| Quantity | Value |
+|---|---|
+| Median absolute error | 0.0728 m |
+| Mean absolute error | 0.1237 m |
+| 90th percentile error | 0.1765 m |
+| Within one 0.1 m voxel | 60.0% |
+| Within two voxels | 93.9% |
+| Rendered depth median | 2.527 m |
+| Accumulated alpha median | 0.9942 |
+
+Median error is below one voxel, which is the resolution limit of the
+comparison: occupancy splats each Gaussian across its own extent, so a ray
+registers a hit up to one voxel before the true surface. This validates the
+renderer and the derived geometry against each other on the real GPU path. It
+is not a claim about reconstructed real-world scenes, coordinate alignment of
+third-party scans, or sim-to-real transfer.
+
+Reproduce with `modal run tools/modal_validate_occupancy.py`. The job refuses
+to report a result if the renderer falls back to the mock path.

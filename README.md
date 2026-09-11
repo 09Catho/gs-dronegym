@@ -2,7 +2,8 @@
 
 <p align="center">
   <a href="https://github.com/09Catho/gs-dronegym"><img alt="repo" src="https://img.shields.io/badge/GitHub-09Catho%2Fgs--dronegym-181717?logo=github"></a>
-  <img alt="python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white">
+  <a href="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <img alt="python" src="https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/License-MIT-green">
   <img alt="status" src="https://img.shields.io/badge/Status-Research%20Infrastructure-blue">
 </p>
@@ -26,18 +27,60 @@ GS-DroneGym can be used in four ways:
 
 ## What's New
 
+### On `main`, not yet on PyPI
+
+**The real Gaussian renderer now works, verified on a GPU.**
+
+![Real gsplat flythrough of the synthetic test room](assets/real_gsplat_flythrough.gif)
+
+Real `gsplat` rasterization on an NVIDIA T4: 81,649 Gaussians at 256×192, median 3.55 ms per frame including the copy back to host memory. This is the synthetic test room with a checkerboard floor, not a captured reconstruction. Three defects had kept the renderer from ever producing a correct image: Gaussian scales were passed without their exponential activation, the camera frame was never converted to the vision convention the rasterizer expects, and depth was read from an alpha-accumulated channel. None could surface on the development machine, where `gsplat` silently falls back to the mock renderer. Reproduce with `modal run tools/modal_render_readme_demo.py`.
+
+**Collision geometry comes from the scene's own Gaussians.**
+
+![Collision geometry derived from the scene's Gaussians](assets/scene_geometry.png)
+
+Obstacles used to be hand-authored boxes unrelated to the rendered image. Loading a Gaussian scene now derives navigation bounds and a voxel occupancy grid from that scene, and the drone collides against it. Checked against real rendered depth over 851 rays, the median error is 0.073 m at 0.1 m voxels, with 93.9% of rays within two voxels. Regenerate the figure with `python tools/make_scene_geometry_figure.py`.
+
+**A reproducible environment that standard RL libraries can consume.**
+
+- Seeding once and then calling `reset()` repeatedly now replays the same episode sequence. Previously only the first episode was reproducible, and augmented frames drifted by up to 43/255 at a fixed seed.
+- Control, physics and camera rates are independent: `control_hz`, `physics_hz` and `camera_hz`, with `episode_time_limit_s` expressed in simulated seconds.
+- `instruction_mode="features"` exposes a deterministic instruction encoding, so the observation space is all `Box`. `observation_mode="state"` skips rendering entirely.
+- Behavior-cloning instruction features no longer change between processes, and checkpoints record an encoder version.
+- Benchmark reports shrank from 621 MB to 1.5 KB by default.
+- CI builds the wheel from a clean checkout and tests the installed package on Ubuntu and Windows for Python 3.10 and 3.11.
+
+```python
+import gs_dronegym
+
+env = gs_dronegym.make(
+    "PointNav-v0",
+    scene=None,
+    control_hz=10.0,
+    camera_hz=5.0,
+    instruction_mode="features",
+)
+obs, info = env.reset(seed=0)
+```
+
+Behavior-cloning results reported before these fixes are unreliable; see [`paper/claim_map.md`](paper/claim_map.md).
+
+### Earlier releases
+
 - `v0.1`: core quadrotor simulator, renderer stack, tasks, metrics, and viewer
 - `v0.2`: shared trajectory schema, benchmark adapters, dataset loaders, and behavior cloning baseline
 - `v0.3`: synthetic VLA-AN-like dataset generation with staged curricula, expert waypoints, safety labels, Parquet shards, debug JSON episodes, preview CLI, and dataset validation
 
 ## Visual Demos
 
+The demos below run on the CPU **mock renderer**, which needs no GPU. Its RGB and depth panels are placeholder test signals, not images of a scene; the top-down trajectory panel is the real simulated flight. For output from the real Gaussian renderer, see [What's New](#whats-new).
+
 **Keyboard control demo**
 
 ![Keyboard demo](assets/keyboard_demo.gif)
 
 This shows manual waypoint control in the live viewer.  
-The left panel is RGB, the middle panel is depth, and the right panel is the top-down flight trace.  
+The left and middle panels are the mock renderer's placeholder RGB and depth; the right panel is the top-down flight trace.  
 As you press movement keys, the path and heading update in real time.
 
 **Obstacle slalom**
@@ -76,6 +119,8 @@ Install from PyPI:
 ```bash
 pip install gs-dronegym
 ```
+
+> **Note:** PyPI currently has `0.3.0`, which predates the renderer, reproducibility and packaging fixes on `main` described in [What's New](#whats-new). Until the next release, install from GitHub to get them.
 
 If you see `No matching distribution found for gs-dronegym`, you are probably using Python `3.9` or older. Create a Python 3.10+ environment and install again:
 
@@ -205,6 +250,8 @@ gs-dronegym-preview-dataset-task --scene None --stage stage2_flight_skills --tas
 ### Workflow D: Load a real Gaussian scene
 
 Use this when you already have a Gaussian `.ply` from Nerfstudio or another 3DGS pipeline.
+
+> **Status:** the real renderer has been verified on a Linux GPU against a synthetic Gaussian scene. Captured reconstructions load through the same path, but their coordinate frame, scale and navigation bounds have not yet been validated. On native Windows, `gsplat` cannot build its CUDA extension without MSVC and the renderer falls back to the mock path.
 
 ```bash
 gs-dronegym-live-view --env-id PointNav-v0 --scene C:\path\to\scene.ply --renderer-device cuda --policy keyboard
@@ -414,12 +461,14 @@ Planned work from here:
 ## Development
 
 ```bash
-pip install -e .[dev]
-python -m ruff check .
+pip install -e ".[dev]"
+python -m ruff check gs_dronegym tests examples paper tools
 python -m pytest -q
 ```
 
 The core path remains CPU-only and fully testable with `MockRenderer`. Optional GPU rendering and external benchmark integrations are import-gated.
+
+CI runs these checks on Ubuntu and Windows for Python 3.10 and 3.11. It then builds the wheel from a clean checkout, checks its contents against the tracked sources with `tools/check_wheel_contents.py`, installs it into a fresh environment and runs `tools/wheel_smoke_test.py` from outside the source tree. The GPU renderer cannot run on hosted runners and is validated separately with `tools/modal_validate_occupancy.py`.
 
 ## Citation
 

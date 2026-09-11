@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://github.com/09Catho/gs-dronegym"><img alt="repo" src="https://img.shields.io/badge/GitHub-09Catho%2Fgs--dronegym-181717?logo=github"></a>
   <a href="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://pypi.org/project/gs-dronegym/"><img alt="PyPI" src="https://img.shields.io/pypi/v/gs-dronegym?logo=pypi&logoColor=white"></a>
   <img alt="python" src="https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/License-MIT-green">
   <img alt="status" src="https://img.shields.io/badge/Status-Research%20Infrastructure-blue">
@@ -28,6 +29,8 @@ GS-DroneGym can be used in four ways:
 ## What's New
 
 ### v0.4.0
+
+Now on PyPI: `pip install -U gs-dronegym`.
 
 **The real Gaussian renderer now works, verified on a GPU.**
 
@@ -145,7 +148,7 @@ cd gs-dronegym
 pip install -e .
 ```
 
-For CUDA rendering extras from GitHub:
+For CUDA rendering extras:
 
 ```bash
 pip install "gs-dronegym[cuda]"
@@ -348,6 +351,9 @@ flowchart LR
     A["Drone state"] --> B["QuadrotorDynamics"]
     B --> C["CameraModel pose"]
     C --> D["GSplatRenderer / MockRenderer"]
+    S["Gaussian scene .ply"] --> D
+    S --> O["Derived occupancy grid"]
+    O --> B
     D --> E["RGB + depth observations"]
     E --> F["Policy / benchmark adapter"]
     F --> G["Waypoint [x, y, z, yaw]"]
@@ -417,7 +423,7 @@ The [`examples/`](https://github.com/09Catho/gs-dronegym/blob/v0.4.0/examples) f
 
 ## Real Scene Workflow
 
-If you want real rendering instead of mock rendering:
+If you want real rendering instead of mock rendering, first read the validation status under [Workflow D](#workflow-d-load-a-real-gaussian-scene):
 
 1. use a built-in public scene handle such as `room`, `garden`, `bicycle`, or `truck`, or capture your own room/outdoor space
 2. if using your own capture, build a Gaussian `.ply` with Nerfstudio or another 3DGS pipeline
@@ -433,22 +439,16 @@ gs-dronegym-live-view --env-id PointNav-v0 --scene room --renderer-device cuda -
 
 ## Next Phase
 
-Planned work from here:
+Planned work, not yet implemented:
 
-1. **Larger real-scene dataset generation**
-   - better `gsplat` batching
-   - multi-scene GPU scheduling
-   - stronger resume/checkpoint behavior
-
-2. **Richer expert supervision**
-   - stronger recovery labels
-   - better dynamic-target forecasting
-   - optional low-level control labels in addition to waypoints
-
-3. **Dataset publishing**
-   - dataset cards
-   - Hugging Face export helpers
-   - benchmark tables for generated splits
+1. **Vectorized environments**
+   - batched dynamics and batched Gaussian rendering, so many environments step together instead of one at a time
+2. **Deadline-aware simulation**
+   - model onboard inference latency inside the control loop, so a policy is evaluated at the decision rate real drone hardware can sustain
+3. **Captured-scene validation**
+   - coordinate frame, metric scale and navigation bounds for real reconstructions, not only synthetic test scenes
+4. **Resumable dataset generation**
+   - shard checkpointing, safe resume, and coordinate and unit conventions recorded in the dataset manifest
 
 ## References
 
@@ -473,10 +473,11 @@ CI runs these checks on Ubuntu and Windows for Python 3.10 and 3.11. It then bui
 ## Citation
 
 ```bibtex
-@software{saxena2025gsdronegym,
-  author = {Saxena, Atul},
-  title  = {GS-DroneGym: Photorealistic Simulation for VLA Drone Navigation},
-  year   = {2025},
-  url    = {https://github.com/09Catho/gs-dronegym}
+@software{saxena2026gsdronegym,
+  author  = {Saxena, Atul},
+  title   = {GS-DroneGym: Photorealistic Simulation for VLA Drone Navigation},
+  year    = {2026},
+  version = {0.4.0},
+  url     = {https://github.com/09Catho/gs-dronegym}
 }
 ```

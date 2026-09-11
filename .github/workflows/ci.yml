@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MPLBACKEND: Agg
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  # CPU wheels keep CI small. The CUDA rendering path cannot run on hosted
+  # runners and is validated separately with tools/modal_validate_occupancy.py.
+  TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: python -m pip install "ruff==0.14.5"
+      - name: Ruff
+        run: python -m ruff check gs_dronegym tests examples paper tools
+
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install package with development extras
+        shell: bash
+        run: |
+          python -m pip install torch --index-url "$TORCH_INDEX_URL"
+          python -m pip install -e ".[dev]"
+      - name: Run test suite
+        run: python -m pytest -q
+
+  build:
+    name: Build and inspect distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install build tooling
+        run: python -m pip install build twine
+      - name: Build sdist and wheel from the clean checkout
+        run: python -m build
+      - name: Check distribution metadata
+        run: python -m twine check --strict dist/*
+      - name: Check wheel contents against tracked sources
+        shell: bash
+        run: python tools/check_wheel_contents.py dist/*.whl --source-root .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  wheel-smoke:
+    name: Installed wheel (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.11"]
+    steps:
+      # Checked out only for tools/wheel_smoke_test.py; the smoke test itself
+      # runs from outside this tree and refuses to import source files.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Install the wheel into a clean environment
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/wheel-env"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            venv_python="$RUNNER_TEMP/wheel-env/Scripts/python.exe"
+          else
+            venv_python="$RUNNER_TEMP/wheel-env/bin/python"
+          fi
+          echo "VENV_PYTHON=$venv_python" >> "$GITHUB_ENV"
+          "$venv_python" -m pip install --upgrade pip
+          "$venv_python" -m pip install torch --index-url "$TORCH_INDEX_URL"
+          "$venv_python" -m pip install dist/*.whl
+      - name: Smoke-test the installed wheel from outside the source tree
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: '"$VENV_PYTHON" "$GITHUB_WORKSPACE/tools/wheel_smoke_test.py"'

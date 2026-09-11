@@ -275,7 +275,32 @@ def check_console_scripts() -> str:
     return f"{len(installed)} scripts ran --help"
 
 
+def check_version_consistency() -> str:
+    """Confirm the runtime version matches the installed distribution metadata.
+
+    The version is declared in both ``pyproject.toml`` and
+    ``gs_dronegym/__init__.py``; a release that bumps only one would report the
+    wrong version at runtime.
+
+    Returns:
+        The agreed version string.
+
+    Raises:
+        AssertionError: If ``gs_dronegym.__version__`` disagrees with the metadata.
+    """
+    import gs_dronegym
+
+    metadata_version = importlib.metadata.version(DISTRIBUTION)
+    if gs_dronegym.__version__ != metadata_version:
+        raise AssertionError(
+            f"gs_dronegym.__version__ is {gs_dronegym.__version__} but the installed "
+            f"distribution is {metadata_version}"
+        )
+    return metadata_version
+
+
 CHECKS: tuple[tuple[str, Callable[[], str]], ...] = (
+    ("version consistency", check_version_consistency),
     ("required modules", check_required_modules),
     ("every module imports", check_every_module_imports),
     ("environment steps", check_environment_steps),

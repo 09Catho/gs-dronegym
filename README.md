@@ -27,17 +27,17 @@ GS-DroneGym can be used in four ways:
 
 ## What's New
 
-### On `main`, not yet on PyPI
+### v0.4.0
 
 **The real Gaussian renderer now works, verified on a GPU.**
 
-![Real gsplat flythrough of the synthetic test room](assets/real_gsplat_flythrough.gif)
+![Real gsplat flythrough of the synthetic test room](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/real_gsplat_flythrough.gif)
 
 Real `gsplat` rasterization on an NVIDIA T4: 81,649 Gaussians at 256×192, median 3.55 ms per frame including the copy back to host memory. This is the synthetic test room with a checkerboard floor, not a captured reconstruction. Three defects had kept the renderer from ever producing a correct image: Gaussian scales were passed without their exponential activation, the camera frame was never converted to the vision convention the rasterizer expects, and depth was read from an alpha-accumulated channel. None could surface on the development machine, where `gsplat` silently falls back to the mock renderer. Reproduce with `modal run tools/modal_render_readme_demo.py`.
 
 **Collision geometry comes from the scene's own Gaussians.**
 
-![Collision geometry derived from the scene's Gaussians](assets/scene_geometry.png)
+![Collision geometry derived from the scene's Gaussians](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/scene_geometry.png)
 
 Obstacles used to be hand-authored boxes unrelated to the rendered image. Loading a Gaussian scene now derives navigation bounds and a voxel occupancy grid from that scene, and the drone collides against it. Checked against real rendered depth over 851 rays, the median error is 0.073 m at 0.1 m voxels, with 93.9% of rays within two voxels. Regenerate the figure with `python tools/make_scene_geometry_figure.py`.
 
@@ -63,7 +63,7 @@ env = gs_dronegym.make(
 obs, info = env.reset(seed=0)
 ```
 
-Behavior-cloning results reported before these fixes are unreliable; see [`paper/claim_map.md`](paper/claim_map.md).
+Behavior-cloning results reported before these fixes are unreliable; see [`paper/claim_map.md`](https://github.com/09Catho/gs-dronegym/blob/v0.4.0/paper/claim_map.md).
 
 ### Earlier releases
 
@@ -77,7 +77,7 @@ The demos below run on the CPU **mock renderer**, which needs no GPU. Its RGB an
 
 **Keyboard control demo**
 
-![Keyboard demo](assets/keyboard_demo.gif)
+![Keyboard demo](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/keyboard_demo.gif)
 
 This shows manual waypoint control in the live viewer.  
 The left and middle panels are the mock renderer's placeholder RGB and depth; the right panel is the top-down flight trace.  
@@ -85,21 +85,21 @@ As you press movement keys, the path and heading update in real time.
 
 **Obstacle slalom**
 
-![Obstacle slalom demo](assets/obstacle_slalom_demo.gif)
+![Obstacle slalom demo](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/obstacle_slalom_demo.gif)
 
 This task checks whether the drone can weave through a structured obstacle course.  
 The top-down view makes drift and near-collision behavior easy to inspect.
 
 **Dynamic follow**
 
-![Dynamic follow demo](assets/dynamic_follow_demo.gif)
+![Dynamic follow demo](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/dynamic_follow_demo.gif)
 
 This task is about staying close to a moving target rather than reaching a fixed point.  
 It is useful for debugging temporal control and tracking lag.
 
 **Narrow corridor**
 
-![Narrow corridor demo](assets/narrow_corridor_demo.gif)
+![Narrow corridor demo](https://raw.githubusercontent.com/09Catho/gs-dronegym/v0.4.0/assets/narrow_corridor_demo.gif)
 
 This stresses precision and safety in tight geometry.  
 You can immediately see whether the drone stays centered or clips the corridor walls.
@@ -120,7 +120,7 @@ Install from PyPI:
 pip install gs-dronegym
 ```
 
-> **Note:** PyPI currently has `0.3.0`, which predates the renderer, reproducibility and packaging fixes on `main` described in [What's New](#whats-new). Until the next release, install from GitHub to get them.
+> **Upgrading from 0.3.0:** that release predates the renderer, reproducibility and packaging fixes described in [What's New](#whats-new). Upgrade with `pip install -U gs-dronegym`.
 
 If you see `No matching distribution found for gs-dronegym`, you are probably using Python `3.9` or older. Create a Python 3.10+ environment and install again:
 
@@ -404,7 +404,7 @@ gs-dronegym-live-view --env-id PointNav-v0 --scene None --policy scripted --step
 
 ## Examples
 
-The [`examples/`](examples) folder includes:
+The [`examples/`](https://github.com/09Catho/gs-dronegym/blob/v0.4.0/examples) folder includes:
 
 - `export_drone_rollout.py`
 - `generate_synthetic_dataset.py`

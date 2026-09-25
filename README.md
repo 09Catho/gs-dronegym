@@ -4,6 +4,7 @@
   <a href="https://github.com/09Catho/gs-dronegym"><img alt="repo" src="https://img.shields.io/badge/GitHub-09Catho%2Fgs--dronegym-181717?logo=github"></a>
   <a href="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/09Catho/gs-dronegym/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="https://pypi.org/project/gs-dronegym/"><img alt="PyPI" src="https://img.shields.io/pypi/v/gs-dronegym?logo=pypi&logoColor=white"></a>
+  <a href="https://pepy.tech/projects/gs-dronegym"><img alt="PyPI Downloads" src="https://static.pepy.tech/personalized-badge/gs-dronegym?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads"></a>
   <img alt="python" src="https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/License-MIT-green">
   <img alt="status" src="https://img.shields.io/badge/Status-Research%20Infrastructure-blue">
